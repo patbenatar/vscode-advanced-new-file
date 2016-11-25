@@ -12,9 +12,7 @@ export function showQuickPick(choices: string[]) {
   });
 }
 
-export function showInputBox(baseDirectory?: string) {
-  if (!baseDirectory) return;
-
+export function showInputBox(baseDirectory: string) {
   let resolveRelativePath = curry(path.join, 2)(baseDirectory);
 
   return vscode.window.showInputBox({
