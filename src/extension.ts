@@ -17,7 +17,7 @@ export function showInputBox(baseDirectory: string) {
 
   return vscode.window.showInputBox({
     prompt: `Relative to ${baseDirectory}`,
-    placeHolder: 'Filename'
+    placeHolder: 'Filename or relative path to file'
   }).then(resolveRelativePath);
 }
 
