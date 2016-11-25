@@ -62,16 +62,21 @@ export function guardNoSelection(selection?: string): PromiseLike<string> {
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand('extension.advancedNewFile', () => {
     let root = vscode.workspace.rootPath;
-    let resolveAbsolutePath = curry(path.join, 2)(root);
 
-    showQuickPick(directories(root))
-      .then(guardNoSelection)
-      .then(showInputBox)
-      .then(guardNoSelection)
-      .then(resolveAbsolutePath)
-      .then(createFile)
-      .then(openFile)
-      .then(noop, noop); // Silently handle rejections for now
+    if (root) {
+      let resolveAbsolutePath = curry(path.join, 2)(root);
+
+      showQuickPick(directories(root))
+        .then(guardNoSelection)
+        .then(showInputBox)
+        .then(guardNoSelection)
+        .then(resolveAbsolutePath)
+        .then(createFile)
+        .then(openFile)
+        .then(noop, noop); // Silently handle rejections for now
+    } else {
+      vscode.window.showErrorMessage('It doesn\'t look like you have a folder opened in your workspace. Try opening a folder first.')
+    }
   });
 
   context.subscriptions.push(disposable);
