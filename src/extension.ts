@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 const { curry, noop } = require('lodash'); // Typings for curry appear to be broken
-const glob = require('glob-fs')({ gitignore: true });
+const glob = require('glob-fs');
 
 export function showQuickPick(choices: string[]) {
   return vscode.window.showQuickPick(choices, {
@@ -22,14 +22,14 @@ export function showInputBox(baseDirectory: string) {
 }
 
 export function directories(root: string): string[] {
-  let directories = glob
+  let results = glob({ gitignore: true })
     .readdirSync('**', { cwd: root })
     .filter(f => fs.statSync(path.join(root, f)).isDirectory())
     .map(f => '/' + f);
 
-  directories.unshift('/');
+  results.unshift('/');
 
-  return directories;
+  return results;
 }
 
 export function createFile(absolutePath: string): string {
