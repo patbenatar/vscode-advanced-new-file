@@ -1,67 +1,82 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
+const { curry, noop } = require('lodash'); // Typings for curry appear to be broken
 const glob = require('glob-fs')({ gitignore: true });
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+export function showQuickPick(choices: string[]) {
+  return vscode.window.showQuickPick(choices, {
+    placeHolder: 'Create relative to existing directory'
+  });
+}
+
+export function showInputBox(baseDirectory?: string) {
+  if (!baseDirectory) return;
+
+  let resolveRelativePath = curry(path.join, 2)(baseDirectory);
+
+  return vscode.window.showInputBox({
+    prompt: `Relative to ${baseDirectory}`,
+    placeHolder: 'Filename'
+  }).then(resolveRelativePath);
+}
+
+export function directories(root: string): string[] {
+  let directories = glob
+    .readdirSync('**', { cwd: root })
+    .filter(f => fs.statSync(path.join(root, f)).isDirectory())
+    .map(f => '/' + f);
+
+  directories.unshift('/');
+
+  return directories;
+}
+
+export function createFile(absolutePath: string): string {
+  let directoryToFile = path.dirname(absolutePath);
+
+  if (!fs.existsSync(absolutePath)) {
+    mkdirp.sync(directoryToFile);
+    fs.appendFileSync(absolutePath, '');
+  }
+
+  return absolutePath;
+}
+
+export function openFile(absolutePath: string): PromiseLike<string> {
+  return vscode.workspace.openTextDocument(absolutePath).then((textDocument) => {
+    if (textDocument) {
+      vscode.window.showTextDocument(textDocument);
+      return Promise.resolve(absolutePath);
+    } else {
+      return Promise.reject('Could not open document');
+    }
+  });
+}
+
+export function guardNoSelection(selection?: string): PromiseLike<string> {
+  if (!selection) return Promise.reject('No selection');
+  return Promise.resolve(selection);
+}
+
 export function activate(context: vscode.ExtensionContext) {
-
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Congratulations, your extension "advanced-new-file" is now active!');
-
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with  registerCommand
-  // The commandId parameter must match the command field in package.json
   let disposable = vscode.commands.registerCommand('extension.advancedNewFile', () => {
     let root = vscode.workspace.rootPath;
+    let resolveAbsolutePath = curry(path.join, 2)(root);
 
-    function promptForNewFile(baseDirectory?: string) {
-      if (!baseDirectory) return;
-
-      function createNewFile(filename: string): string {
-        let absolutePathToFile = path.join(root, baseDirectory, filename);
-        let directoryToFile = path.dirname(absolutePathToFile);
-
-        if (!fs.existsSync(absolutePathToFile)) {
-          mkdirp.sync(directoryToFile);
-          fs.appendFileSync(absolutePathToFile, '');
-        }
-
-        return absolutePathToFile;
-      }
-
-      function openNewFile(absolutePath: string): void {
-        vscode.workspace.openTextDocument(absolutePath).then((textDocument) => {
-          if (textDocument) vscode.window.showTextDocument(textDocument)
-        });
-      }
-
-      return vscode.window.showInputBox({
-        prompt: `Relative to ${baseDirectory}`,
-        placeHolder: 'Filename'
-      }).then(createNewFile).then(openNewFile);
-    }
-
-    let existingDirectories = glob
-      .readdirSync('**', { cwd: root })
-      .filter(f => fs.statSync(path.join(root, f)).isDirectory())
-
-    existingDirectories.unshift('/');
-
-    vscode.window.showQuickPick(existingDirectories, {
-      placeHolder: 'Create relative to existing directory'
-    }).then(promptForNewFile);
+    showQuickPick(directories(root))
+      .then(guardNoSelection)
+      .then(showInputBox)
+      .then(guardNoSelection)
+      .then(resolveAbsolutePath)
+      .then(createFile)
+      .then(openFile)
+      .then(noop, noop); // Silently handle rejections for now
   });
 
   context.subscriptions.push(disposable);
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() {
-}
+export function deactivate() {}
