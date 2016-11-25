@@ -8,7 +8,7 @@ const glob = require('glob-fs');
 
 export function showQuickPick(choices: string[]) {
   return vscode.window.showQuickPick(choices, {
-    placeHolder: 'Create relative to existing directory'
+    placeHolder: 'First, select an existing path to create relative to'
   });
 }
 
