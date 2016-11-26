@@ -66,7 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (root) {
       let resolveAbsolutePath = curry(path.join, 2)(root);
 
-      showQuickPick(directories(root))
+      return showQuickPick(directories(root))
         .then(guardNoSelection)
         .then(showInputBox)
         .then(guardNoSelection)
@@ -75,7 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
         .then(openFile)
         .then(noop, noop); // Silently handle rejections for now
     } else {
-      vscode.window.showErrorMessage('It doesn\'t look like you have a folder opened in your workspace. Try opening a folder first.')
+      return vscode.window.showErrorMessage('It doesn\'t look like you have a folder opened in your workspace. Try opening a folder first.')
     }
   });
 

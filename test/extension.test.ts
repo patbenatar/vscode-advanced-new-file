@@ -1,5 +1,6 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
+import * as spies from 'chai-spies';
 import * as vscode from 'vscode';
 import * as advancedNewFile from '../src/extension';
 import * as proxyquire from 'proxyquire';
@@ -8,6 +9,7 @@ import * as fs from 'fs';
 import { removeSync as removeDirSync } from 'fs-extra';
 
 chai.use(chaiAsPromised);
+chai.use(spies);
 const expect = chai.expect;
 
 describe('Advanced New File', () => {
@@ -134,6 +136,161 @@ describe('Advanced New File', () => {
       it('returns the path to file', () => {
         expect(advancedNewFile.createFile(existingFileDescriptor))
           .to.eq(existingFileDescriptor);
+      });
+    });
+  });
+
+  describe('openFile', () => {
+    it('attempts to open the file', () => {
+      const textDocument = 'mock document';
+      const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
+      const showTextDocument = chai.spy();
+
+      const advancedNewFile = proxyquire('../src/extension', {
+        vscode: {
+          workspace: { openTextDocument: openTextDocument },
+          window: { showTextDocument: showTextDocument }
+        }
+      });
+
+      advancedNewFile.openFile('/path/to/file.ts').then(() => {
+        expect(openTextDocument).to.have.been.called.with('/path/to/file.ts');
+      });
+    });
+
+    context('file can be opened successfully', () => {
+      it('focuses the opened file', () => {
+        const textDocument = 'mock document';
+        const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
+        const showTextDocument = chai.spy();
+
+        const advancedNewFile = proxyquire('../src/extension', {
+          vscode: {
+            workspace: { openTextDocument: openTextDocument },
+            window: { showTextDocument: showTextDocument }
+          }
+        });
+
+        return advancedNewFile.openFile('/path/to/file.ts').then(() => {
+          expect(showTextDocument).to.have.been.called.with(textDocument);
+        });
+      });
+
+      it('resolves with the opened file path', () => {
+        const textDocument = 'mock document';
+        const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
+        const showTextDocument = chai.spy();
+
+        const advancedNewFile = proxyquire('../src/extension', {
+          vscode: {
+            workspace: { openTextDocument: openTextDocument },
+            window: { showTextDocument: showTextDocument }
+          }
+        });
+
+        return expect(advancedNewFile.openFile('/path/to/file.ts'))
+          .to.eventually.eq('/path/to/file.ts');
+      });
+    });
+
+    context('file fails to open', () => {
+      it('rejects with an error message', () => {
+        const textDocument = 'mock document';
+        const openTextDocument = chai.spy(() => Promise.resolve(null));
+        const showTextDocument = chai.spy();
+
+        const advancedNewFile = proxyquire('../src/extension', {
+          vscode: {
+            workspace: { openTextDocument: openTextDocument },
+            window: { showTextDocument: showTextDocument }
+          }
+        });
+
+        return expect(advancedNewFile.openFile('/path/to/file.ts'))
+          .to.eventually.be.rejectedWith('Could not open document');
+      });
+    });
+  });
+
+  describe('command integration tests', () => {
+    const tmpDir = path.join(__dirname, 'createFile.tmp');
+    beforeEach(() => fs.mkdirSync(tmpDir));
+    afterEach(() => removeDirSync(tmpDir));
+
+    it('creates and opens a file at given path', () => {
+      let command;
+      const registerCommand = (name, commandFn) => command = commandFn;
+
+      const textDocument = 'mock document';
+      const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
+      const showTextDocument = chai.spy();
+      const showErrorMessage = chai.spy();
+
+      const advancedNewFile = proxyquire('../src/extension', {
+        vscode: {
+          commands: { registerCommand: registerCommand },
+          workspace: {
+            rootPath: tmpDir,
+            openTextDocument: openTextDocument
+          },
+          window: {
+            showErrorMessage: showErrorMessage,
+            showQuickPick: () => Promise.resolve('path/to'),
+            showInputBox: () => Promise.resolve('input/path/to/file.rb'),
+            showTextDocument: showTextDocument
+          }
+        },
+        'glob-fs': () => {
+          return { readdirSync: () => ['path', 'path/to'] }
+        },
+        fs: {
+          statSync: () => {
+            return { isDirectory: () => true };
+          }
+        }
+      });
+
+      const context = { subscriptions: [] };
+
+      advancedNewFile.activate(context);
+
+      const newFileDescriptor =
+        path.join(tmpDir, 'path/to/input/path/to/file.rb');
+
+      return command().then(() => {
+        expect(openTextDocument)
+          .to.have.been.called.with(newFileDescriptor);
+
+        expect(showTextDocument)
+          .to.have.been.called.with(textDocument);
+
+        expect(fs.readFileSync(newFileDescriptor, { encoding: 'utf8' }))
+          .to.eq('');
+      });
+    });
+
+    context('no project opened in workspace', () => {
+      it('shows an error message', () => {
+        let command;
+        const registerCommand = (name, commandFn) => command = commandFn;
+        const showErrorMessage = chai.spy();
+
+        const advancedNewFile = proxyquire('../src/extension', {
+          vscode: {
+            commands: { registerCommand: registerCommand },
+            workspace: { rootPath: undefined },
+            window: { showErrorMessage: showErrorMessage }
+          }
+        });
+
+        const context = { subscriptions: [] };
+
+        advancedNewFile.activate(context);
+        command();
+
+        expect(showErrorMessage)
+          .to.have.been.called
+          .with('It doesn\'t look like you have a folder opened in your workspace. Try opening a folder first.');
       });
     });
   });
