@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 const { curry, noop } = require('lodash'); // Typings for curry appear to be broken
-const glob = require('glob-fs');
+const glob = require('glob-fs'); // No typings for glob-fs
 
 export function showQuickPick(choices: string[]) {
   return vscode.window.showQuickPick(choices, {
