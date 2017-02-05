@@ -44,6 +44,8 @@
     "@types/chai-as-promised": "0.0.29",
     "@types/chai-spies": "0.0.0",
     "@types/fs-extra": "0.0.35",
+    "@types/glob": "^5.0.30",
+    "@types/lodash": "^4.14.40",
     "@types/mkdirp": "^0.3.29",
     "@types/mocha": "^2.2.32",
     "@types/node": "^6.0.40",
@@ -58,8 +60,8 @@
     "vscode": "^1.0.0"
   },
   "dependencies": {
-    "@types/lodash": "^4.14.40",
-    "glob-fs": "^0.1.6",
+    "gitignore-to-glob": "^0.3.0",
+    "glob": "^7.1.1",
     "lodash": "^4.17.2",
     "mkdirp": "^0.5.1"
   }

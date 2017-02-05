@@ -54,48 +54,29 @@ describe('Advanced New File', () => {
   });
 
   describe('directories', () => {
-    const loadWithMocks = () => {
-      return proxyquire('../src/extension', {
-        'glob-fs': () => {
-          return {
-            readdirSync: () => {
-              return [
-                'path',
-                'path/to',
-                'path/to/file.rb'
-              ];
-            }
-          }
-        },
-        fs: {
-          statSync: (fileDescriptor) => {
-            switch(fileDescriptor) {
-              case '/root/path/path/to/file.rb':
-                return { isDirectory: () => false };
-              default:
-                return { isDirectory: () => true };
-            }
-          }
-        }
-      });
-    };
+    const dummyProjectRoot = path.join(__dirname, 'dummy_project');
 
     it('only returns directories, prepended with /', () => {
-      const advancedNewFile = loadWithMocks();
+      let result = advancedNewFile.directories(dummyProjectRoot);
 
-      let result = advancedNewFile.directories('/root/path');
-
-      expect(result).to.include('/path');
-      expect(result).to.include('/path/to');
-      expect(result).not.to.include('/path/to/file.rb');
+      expect(result).to.include('/folder');
+      expect(result).not.to.include('/folder/file');
     });
 
-    it('adds its root (/) to the set', () => {
-      const advancedNewFile = loadWithMocks();
-
-      let result = advancedNewFile.directories('/root/path');
-
+    it('includes its root (/) in the set', () => {
+      let result = advancedNewFile.directories(dummyProjectRoot);
       expect(result).to.include('/');
+    });
+
+    context('with a gitignore file', () => {
+      const gitignoreFile = path.join(dummyProjectRoot, '.gitignore');
+      before(() => fs.writeFileSync(gitignoreFile, 'ignored/**'));
+      after(() => fs.unlinkSync(gitignoreFile))
+
+      it('does not include gitignored directories', () => {
+        let result = advancedNewFile.directories(dummyProjectRoot);
+        expect(result).not.to.include('/ignored');
+      });
     });
   });
 
@@ -239,9 +220,6 @@ describe('Advanced New File', () => {
             showInputBox: () => Promise.resolve('input/path/to/file.rb'),
             showTextDocument: showTextDocument
           }
-        },
-        'glob-fs': () => {
-          return { readdirSync: () => ['path', 'path/to'] }
         },
         fs: {
           statSync: () => {

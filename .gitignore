@@ -1,2 +1,4 @@
-out
+out/test/*.js*
+!out/test/dummy_project
+out/src/*.js*
 node_modules

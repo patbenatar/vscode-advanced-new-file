@@ -4,7 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 const { curry, noop } = require('lodash'); // Typings for curry appear to be broken
-const glob = require('glob-fs'); // No typings for glob-fs
+import { sync as globSync } from 'glob';
+const gitignoreToGlob = require('gitignore-to-glob'); // No typings exist yet
+
+function invertGlob(pattern) {
+  return pattern.replace(/^!/, '');
+}
 
 export function showQuickPick(choices: string[]) {
   return vscode.window.showQuickPick(choices, {
@@ -22,8 +27,12 @@ export function showInputBox(baseDirectory: string) {
 }
 
 export function directories(root: string): string[] {
-  let results = glob({ gitignore: true })
-    .readdirSync('**', { cwd: root })
+  const gitignoreFile = path.join(root, '.gitignore');
+  const gitignoreGlobs = fs.existsSync(gitignoreFile) ?
+    gitignoreToGlob(gitignoreFile).map(invertGlob) :
+    [];
+
+  const results = globSync('**', { cwd: root, ignore: gitignoreGlobs })
     .filter(f => fs.statSync(path.join(root, f)).isDirectory())
     .map(f => '/' + f);
 
