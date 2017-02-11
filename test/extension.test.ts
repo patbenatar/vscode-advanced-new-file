@@ -89,6 +89,30 @@ describe('Advanced New File', () => {
       });
     });
 
+    context('with a gitignore file in a directory above workspace root', () => {
+      const testProjectRoot = path.join(dummyProjectRoot, 'folder');
+      const parentGitignoreFile =
+        path.join(testProjectRoot, '..', '.gitignore');
+      const gitignoreFile = path.join(testProjectRoot, '.gitignore');
+
+      before(() => {
+        fs.writeFileSync(parentGitignoreFile, 'nested-ignored/');
+        fs.writeFileSync(gitignoreFile, 'nested/');
+      });
+
+      after(() => {
+        fs.unlinkSync(parentGitignoreFile);
+        fs.unlinkSync(gitignoreFile);
+      });
+
+      it('ignores as specified in both gitignore files', () => {
+        let result = advancedNewFile.directories(testProjectRoot);
+
+        expect(result).not.to.include('/nested-ignored');
+        expect(result).not.to.include('/nested');
+      });
+    });
+
     context('with vscode setting files.exclude', () => {
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
