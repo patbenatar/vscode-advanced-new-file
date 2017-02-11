@@ -29,10 +29,17 @@ export function showInputBox(baseDirectory: string) {
 export function directories(root: string): string[] {
   const gitignoreFile = path.join(root, '.gitignore');
   const gitignoreGlobs = fs.existsSync(gitignoreFile) ?
-    gitignoreToGlob(gitignoreFile).map(invertGlob) :
+    gitignoreToGlob(gitignoreFile) :
     [];
 
-  const results = globSync('**', { cwd: root, ignore: gitignoreGlobs })
+  const configFilesExclude = vscode.workspace.getConfiguration('files.exclude');
+  const workspaceIgnored = Object.keys(configFilesExclude)
+      .filter(key => configFilesExclude[key] === true)
+  const workspaceIgnoredGlobs = gitignoreToGlob(workspaceIgnored.join('\n'), { string: true });
+
+  const ignore = gitignoreGlobs.concat(workspaceIgnoredGlobs).map(invertGlob);
+
+  const results = globSync('**', { cwd: root, ignore: ignore })
     .filter(f => fs.statSync(path.join(root, f)).isDirectory())
     .map(f => '/' + f);
 

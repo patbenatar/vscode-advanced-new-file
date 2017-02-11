@@ -78,6 +78,31 @@ describe('Advanced New File', () => {
         expect(result).not.to.include('/ignored');
       });
     });
+
+    context('with vscode setting files.exclude', () => {
+      const advancedNewFile = proxyquire('../src/extension', {
+        vscode: {
+          workspace: {
+            getConfiguration() {
+              return {
+                'ignored/': true,
+                'folder/': false
+              }
+            }
+          },
+        }
+      });
+
+      it('does not include directories with a true value', () => {
+        let result = advancedNewFile.directories(dummyProjectRoot);
+        expect(result).not.to.include('/ignored');
+      });
+
+      it('includes directories with a false value', () => {
+        let result = advancedNewFile.directories(dummyProjectRoot);
+        expect(result).to.include('/folder');
+      });
+    });
   });
 
   describe('createFile', () => {
@@ -212,7 +237,8 @@ describe('Advanced New File', () => {
           commands: { registerCommand: registerCommand },
           workspace: {
             rootPath: tmpDir,
-            openTextDocument: openTextDocument
+            openTextDocument: openTextDocument,
+            getConfiguration() { return {} }
           },
           window: {
             showErrorMessage: showErrorMessage,
