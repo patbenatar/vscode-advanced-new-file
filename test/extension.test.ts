@@ -48,8 +48,11 @@ describe('Advanced New File', () => {
         }
       });
 
+      const expectedPath =
+        path.join('/', 'base', 'dir', 'input', 'path', 'to', 'file.rb');
+
       return expect(advancedNewFile.showInputBox('/base/dir'))
-        .to.eventually.equal('/base/dir/input/path/to/file.rb');
+        .to.eventually.equal(expectedPath);
     });
   });
 
