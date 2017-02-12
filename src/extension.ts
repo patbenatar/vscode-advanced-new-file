@@ -4,11 +4,29 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 import { curry, noop } from 'lodash';
-import { sync as globSync } from 'glob';
 import * as gitignoreToGlob from 'gitignore-to-glob';
+import { platform } from 'os';
+import { sync as globSync } from 'glob';
+const systemRoot =
+  (platform() === 'win32') ? `${process.cwd().split(path.sep)[0]}\\` : '/';
 
 function invertGlob(pattern) {
   return pattern.replace(/^!/, '');
+}
+
+function walkupGitignores(dir, found = []) {
+  const gitignore = path.join(dir, '.gitignore');
+  if (fs.existsSync(gitignore)) found.push(gitignore);
+
+  if (dir !== systemRoot) {
+    return walkupGitignores(path.resolve(dir, '..'), found);
+  } else {
+    return found;
+  }
+}
+
+function flatten(memo, item) {
+  return memo.concat(item);
 }
 
 export function showQuickPick(choices: string[]) {
@@ -29,10 +47,9 @@ export function showInputBox(baseDirectory: string) {
 }
 
 export function directories(root: string): string[] {
-  const gitignoreFile = path.join(root, '.gitignore');
-  const gitignoreGlobs = fs.existsSync(gitignoreFile) ?
-    gitignoreToGlob(gitignoreFile) :
-    [];
+  const gitignoreFiles = walkupGitignores(root);
+  const gitignoreGlobs =
+    gitignoreFiles.map(gitignoreToGlob).reduce(flatten, []);
 
   const configFilesExclude = vscode.workspace.getConfiguration('files.exclude');
   const workspaceIgnored = Object.keys(configFilesExclude)
