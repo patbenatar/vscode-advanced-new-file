@@ -7,7 +7,10 @@
             "es6"
         ],
         "sourceMap": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "baseUrl": "types",
+        "typeRoots": ["types", "node_modules/@types"],
+        "skipLibCheck": true
     },
     "exclude": [
         "node_modules",

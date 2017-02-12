@@ -45,7 +45,7 @@
     "@types/chai-spies": "0.0.0",
     "@types/fs-extra": "0.0.35",
     "@types/glob": "^5.0.30",
-    "@types/lodash": "^4.14.40",
+    "@types/lodash": "^4.14.52",
     "@types/mkdirp": "^0.3.29",
     "@types/mocha": "^2.2.32",
     "@types/node": "^6.0.40",
@@ -57,7 +57,7 @@
     "mocha": "^2.3.3",
     "proxyquire": "^1.7.10",
     "tslint": "^4.4.2",
-    "typescript": "^2.0.3",
+    "typescript": "^2.1.6",
     "vscode": "^1.0.0"
   },
   "dependencies": {

@@ -3,9 +3,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
-const { curry, noop } = require('lodash'); // Typings for curry are broken
+import { curry, noop } from 'lodash';
 import { sync as globSync } from 'glob';
-const gitignoreToGlob = require('gitignore-to-glob'); // No typings exist yet
+import * as gitignoreToGlob from 'gitignore-to-glob';
 
 function invertGlob(pattern) {
   return pattern.replace(/^!/, '');
@@ -64,7 +64,7 @@ export function createFile(absolutePath: string): string {
 
 export function openFile(absolutePath: string): PromiseLike<string> {
   return vscode.workspace.openTextDocument(absolutePath)
-    .then((textDocument) => {
+    .then((textDocument): PromiseLike<string> => {
       if (textDocument) {
         vscode.window.showTextDocument(textDocument);
         return Promise.resolve(absolutePath);
