@@ -38,7 +38,8 @@
     "vscode:prepublish": "tsc -p ./",
     "compile": "tsc -watch -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test"
+    "test": "node ./node_modules/vscode/bin/test",
+    "release": "vsce publish"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
@@ -59,6 +60,7 @@
     "proxyquire": "^1.7.10",
     "tslint": "^4.4.2",
     "typescript": "^2.1.6",
+    "vsce": "^1.18.0",
     "vscode": "^1.0.0"
   },
   "dependencies": {
