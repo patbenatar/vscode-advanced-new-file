@@ -70,8 +70,10 @@ describe('Advanced New File', () => {
 
     context('with a gitignore file', () => {
       const gitignoreFile = path.join(dummyProjectRoot, '.gitignore');
-      before(() => fs.writeFileSync(gitignoreFile, 'ignored/**\nnested-ignored/'));
-      after(() => fs.unlinkSync(gitignoreFile))
+      before(() => {
+        fs.writeFileSync(gitignoreFile, 'ignored/**\nnested-ignored/');
+      });
+      after(() => fs.unlinkSync(gitignoreFile));
 
       it('does not include gitignored directories', () => {
         let result = advancedNewFile.directories(dummyProjectRoot);
@@ -92,9 +94,9 @@ describe('Advanced New File', () => {
               return {
                 'ignored/': true,
                 'folder/': false
-              }
+              };
             }
-          },
+          }
         }
       });
 
@@ -122,8 +124,11 @@ describe('Advanced New File', () => {
       it('creates any nonexistent dirs in path', () => {
         advancedNewFile.createFile(newFileDescriptor);
 
-        expect(fs.statSync(path.join(tmpDir, 'path')).isDirectory()).to.be.true;
-        expect(fs.statSync(path.join(tmpDir, 'path/to')).isDirectory()).to.be.true;
+        expect(fs.statSync(path.join(tmpDir, 'path')).isDirectory())
+          .to.be.true;
+
+        expect(fs.statSync(path.join(tmpDir, 'path/to')).isDirectory())
+          .to.be.true;
       });
 
       it('creates an empty file', () => {
@@ -134,7 +139,9 @@ describe('Advanced New File', () => {
 
     context('file exists', () => {
       const existingFileDescriptor = path.join(tmpDir, 'file.ts');
-      before(() => fs.appendFileSync(existingFileDescriptor, 'existing content'));
+      before(() => {
+        fs.appendFileSync(existingFileDescriptor, 'existing content');
+      });
       after(() => fs.unlinkSync(existingFileDescriptor));
 
       it('does not overwrite the file', () => {
@@ -159,8 +166,8 @@ describe('Advanced New File', () => {
 
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
-          workspace: { openTextDocument: openTextDocument },
-          window: { showTextDocument: showTextDocument }
+          workspace: { openTextDocument },
+          window: { showTextDocument }
         }
       });
 
@@ -177,8 +184,8 @@ describe('Advanced New File', () => {
 
         const advancedNewFile = proxyquire('../src/extension', {
           vscode: {
-            workspace: { openTextDocument: openTextDocument },
-            window: { showTextDocument: showTextDocument }
+            workspace: { openTextDocument },
+            window: { showTextDocument }
           }
         });
 
@@ -194,8 +201,8 @@ describe('Advanced New File', () => {
 
         const advancedNewFile = proxyquire('../src/extension', {
           vscode: {
-            workspace: { openTextDocument: openTextDocument },
-            window: { showTextDocument: showTextDocument }
+            workspace: { openTextDocument },
+            window: { showTextDocument }
           }
         });
 
@@ -212,8 +219,8 @@ describe('Advanced New File', () => {
 
         const advancedNewFile = proxyquire('../src/extension', {
           vscode: {
-            workspace: { openTextDocument: openTextDocument },
-            window: { showTextDocument: showTextDocument }
+            workspace: { openTextDocument },
+            window: { showTextDocument }
           }
         });
 
@@ -239,17 +246,17 @@ describe('Advanced New File', () => {
 
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
-          commands: { registerCommand: registerCommand },
+          commands: { registerCommand },
           workspace: {
             rootPath: tmpDir,
-            openTextDocument: openTextDocument,
-            getConfiguration() { return {} }
+            openTextDocument,
+            getConfiguration() { return {}; }
           },
           window: {
-            showErrorMessage: showErrorMessage,
+            showErrorMessage,
             showQuickPick: () => Promise.resolve('path/to'),
             showInputBox: () => Promise.resolve('input/path/to/file.rb'),
-            showTextDocument: showTextDocument
+            showTextDocument
           }
         },
         fs: {
@@ -286,9 +293,9 @@ describe('Advanced New File', () => {
 
         const advancedNewFile = proxyquire('../src/extension', {
           vscode: {
-            commands: { registerCommand: registerCommand },
+            commands: { registerCommand },
             workspace: { rootPath: undefined },
-            window: { showErrorMessage: showErrorMessage }
+            window: { showErrorMessage }
           }
         });
 
@@ -299,7 +306,8 @@ describe('Advanced New File', () => {
 
         expect(showErrorMessage)
           .to.have.been.called
-          .with('It doesn\'t look like you have a folder opened in your workspace. Try opening a folder first.');
+          .with('It doesn\'t look like you have a folder opened in your ' +
+                'workspace. Try opening a folder first.');
       });
     });
   });

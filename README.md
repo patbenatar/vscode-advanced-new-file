@@ -22,3 +22,10 @@ autocomplete within the text input box (See
 https://github.com/Microsoft/vscode/issues/426), we work around this limitation
 and provide autocomplete using a two-step workflow of selecting existing path,
 then providing new filename/path relative to the selection.
+
+## Contributing
+
+1. Add your feature or fix (in `src/`) with test coverage (in `test/`)
+1. Run the tests (via Debug > Launch Tests)
+1. Run the linter: `tslint src/** test/**`
+1. Open a PR
