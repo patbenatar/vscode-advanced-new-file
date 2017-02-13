@@ -12,6 +12,7 @@ files anywhere in your workspace.
 
 * Fuzzy-matching autocomplete to create new file relative to existing path
 * Create new directories while creating a new file
+* Ignores gitignored and workspace ignored directories
 
 ## Usage
 
