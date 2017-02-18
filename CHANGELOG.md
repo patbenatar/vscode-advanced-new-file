@@ -10,8 +10,6 @@
 * Added Travis.ci for Mac and Linux testing, AppVeyor for Windows testing
 * Added TSLint and filled some typedef gaps
 
-## Bug Fixes
-
 # 0.2.0
 
 ## What's New
