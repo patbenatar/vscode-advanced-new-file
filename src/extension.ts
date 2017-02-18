@@ -29,9 +29,34 @@ function flatten(memo, item) {
   return memo.concat(item);
 }
 
-export function showQuickPick(choices: string[]) {
+function directoriesSync(root: string): string[] {
+  const gitignoreFiles = walkupGitignores(root);
+  const gitignoreGlobs =
+    gitignoreFiles.map(gitignoreToGlob).reduce(flatten, []);
+
+  const configFilesExclude =
+    vscode.workspace.getConfiguration('files.exclude');
+  const workspaceIgnored = Object.keys(configFilesExclude)
+    .filter(key => configFilesExclude[key] === true);
+  const workspaceIgnoredGlobs =
+    gitignoreToGlob(workspaceIgnored.join('\n'), { string: true });
+
+  const ignore =
+    gitignoreGlobs.concat(workspaceIgnoredGlobs).map(invertGlob);
+
+  const results = globSync('**', { cwd: root, ignore })
+    .filter(f => fs.statSync(path.join(root, f)).isDirectory())
+    .map(f => '/' + f);
+
+  results.unshift('/');
+
+  return results;
+}
+
+export function showQuickPick(choices: Promise<string[]>) {
   return vscode.window.showQuickPick(choices, {
-    placeHolder: 'First, select an existing path to create relative to'
+    placeHolder: 'First, select an existing path to create relative to ' +
+                 '(larger projects may take a moment to load)'
   });
 }
 
@@ -46,26 +71,19 @@ export function showInputBox(baseDirectory: string) {
   }).then(resolveRelativePath);
 }
 
-export function directories(root: string): string[] {
-  const gitignoreFiles = walkupGitignores(root);
-  const gitignoreGlobs =
-    gitignoreFiles.map(gitignoreToGlob).reduce(flatten, []);
+export function directories(root: string): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    const findDirectories = () => {
+      try {
+        resolve(directoriesSync(root));
+      } catch (error) {
+        reject(error);
+      }
+    };
 
-  const configFilesExclude = vscode.workspace.getConfiguration('files.exclude');
-  const workspaceIgnored = Object.keys(configFilesExclude)
-    .filter(key => configFilesExclude[key] === true);
-  const workspaceIgnoredGlobs =
-    gitignoreToGlob(workspaceIgnored.join('\n'), { string: true });
-
-  const ignore = gitignoreGlobs.concat(workspaceIgnoredGlobs).map(invertGlob);
-
-  const results = globSync('**', { cwd: root, ignore })
-    .filter(f => fs.statSync(path.join(root, f)).isDirectory())
-    .map(f => '/' + f);
-
-  results.unshift('/');
-
-  return results;
+    const delayToAllowVSCodeToRender = 1;
+    setTimeout(findDirectories, delayToAllowVSCodeToRender);
+  });
 }
 
 export function createFile(absolutePath: string): string {

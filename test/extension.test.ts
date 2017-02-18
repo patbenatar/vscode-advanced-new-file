@@ -59,15 +59,15 @@ describe('Advanced New File', () => {
   describe('directories', () => {
     const dummyProjectRoot = path.join(__dirname, 'dummy_project');
 
-    it('only returns directories, prepended with /', () => {
-      let result = advancedNewFile.directories(dummyProjectRoot);
+    it('only returns directories, prepended with /', async () => {
+      let result = await advancedNewFile.directories(dummyProjectRoot);
 
       expect(result).to.include('/folder');
       expect(result).not.to.include('/folder/file');
     });
 
-    it('includes its root (/) in the set', () => {
-      let result = advancedNewFile.directories(dummyProjectRoot);
+    it('includes its root (/) in the set', async () => {
+      let result = await advancedNewFile.directories(dummyProjectRoot);
       expect(result).to.include('/');
     });
 
@@ -78,13 +78,13 @@ describe('Advanced New File', () => {
       });
       after(() => fs.unlinkSync(gitignoreFile));
 
-      it('does not include gitignored directories', () => {
-        let result = advancedNewFile.directories(dummyProjectRoot);
+      it('does not include gitignored directories', async () => {
+        let result = await advancedNewFile.directories(dummyProjectRoot);
         expect(result).not.to.include('/ignored');
       });
 
-      it('does not include nested gitignored directories', () => {
-        let result = advancedNewFile.directories(dummyProjectRoot);
+      it('does not include nested gitignored directories', async () => {
+        let result = await advancedNewFile.directories(dummyProjectRoot);
         expect(result).not.to.include('/folder/nested-ignored');
       });
     });
@@ -105,8 +105,8 @@ describe('Advanced New File', () => {
         fs.unlinkSync(gitignoreFile);
       });
 
-      it('ignores as specified in both gitignore files', () => {
-        let result = advancedNewFile.directories(testProjectRoot);
+      it('ignores as specified in both gitignore files', async () => {
+        let result = await advancedNewFile.directories(testProjectRoot);
 
         expect(result).not.to.include('/nested-ignored');
         expect(result).not.to.include('/nested');
@@ -127,13 +127,13 @@ describe('Advanced New File', () => {
         }
       });
 
-      it('does not include directories with a true value', () => {
-        let result = advancedNewFile.directories(dummyProjectRoot);
+      it('does not include directories with a true value', async () => {
+        let result = await advancedNewFile.directories(dummyProjectRoot);
         expect(result).not.to.include('/ignored');
       });
 
-      it('includes directories with a false value', () => {
-        let result = advancedNewFile.directories(dummyProjectRoot);
+      it('includes directories with a false value', async () => {
+        let result = await advancedNewFile.directories(dummyProjectRoot);
         expect(result).to.include('/folder');
       });
     });
