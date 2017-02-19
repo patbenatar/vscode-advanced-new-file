@@ -1,3 +1,9 @@
+# 0.3.2
+
+## What's New
+* Show quickpick immediately while we wait for directories to load; helpful on
+  large projects where loading may take a while
+
 # 0.3.1
 
 ## What's New
