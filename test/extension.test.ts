@@ -139,48 +139,106 @@ describe('Advanced New File', () => {
     });
   });
 
-  describe('createFile', () => {
-    const tmpDir = path.join(__dirname, 'createFile.tmp');
+  describe('createFileOrFolder', () => {
+    const tmpDir = path.join(__dirname, 'createFileOrFolder.tmp');
     before(() => fs.mkdirSync(tmpDir));
     after(() => removeDirSync(tmpDir));
 
-    context('file does not exist', () => {
-      const newFileDescriptor = path.join(tmpDir, 'path/to/file.ts');
-      after(() => fs.unlinkSync(newFileDescriptor));
+    context('creating file', () => {
+      context('file does not exist', () => {
+        const newFileDescriptor = path.join(tmpDir, 'path/to/file.ts');
+        after(() => fs.unlinkSync(newFileDescriptor));
 
-      it('creates any nonexistent dirs in path', () => {
-        advancedNewFile.createFile(newFileDescriptor);
+        it('creates any nonexistent dirs in path', () => {
+          advancedNewFile.createFileOrFolder(newFileDescriptor);
 
-        expect(fs.statSync(path.join(tmpDir, 'path')).isDirectory())
-          .to.be.true;
+          expect(fs.statSync(path.join(tmpDir, 'path')).isDirectory())
+            .to.be.true;
 
-        expect(fs.statSync(path.join(tmpDir, 'path/to')).isDirectory())
-          .to.be.true;
+          expect(fs.statSync(path.join(tmpDir, 'path/to')).isDirectory())
+            .to.be.true;
+        });
+
+        it('creates an empty file', () => {
+          expect(fs.readFileSync(newFileDescriptor, { encoding: 'utf8' }))
+            .to.eq('');
+        });
       });
 
-      it('creates an empty file', () => {
-        expect(fs.readFileSync(newFileDescriptor, { encoding: 'utf8' }))
-          .to.eq('');
+      context('file exists', () => {
+        const existingFileDescriptor = path.join(tmpDir, 'file.ts');
+        before(() => {
+          fs.appendFileSync(existingFileDescriptor, 'existing content');
+        });
+        after(() => fs.unlinkSync(existingFileDescriptor));
+
+        it('does not overwrite the file', () => {
+          advancedNewFile.createFileOrFolder(existingFileDescriptor);
+
+          expect(fs.readFileSync(existingFileDescriptor, { encoding: 'utf8' }))
+            .to.eq('existing content');
+        });
+
+        it('returns the path to file', () => {
+          expect(advancedNewFile.createFileOrFolder(existingFileDescriptor))
+            .to.eq(existingFileDescriptor);
+        });
       });
     });
 
-    context('file exists', () => {
-      const existingFileDescriptor = path.join(tmpDir, 'file.ts');
-      before(() => {
-        fs.appendFileSync(existingFileDescriptor, 'existing content');
+    context('creating folder', () => {
+      context('folder does not exist', () => {
+        const newFolderDescriptor = path.join(tmpDir, 'path/to/folder') +
+          path.sep;
+
+        after(() => fs.rmdirSync(newFolderDescriptor));
+
+        it('creates any nonexistent dirs in path', () => {
+          advancedNewFile.createFileOrFolder(newFolderDescriptor);
+
+          expect(fs.statSync(path.join(tmpDir, 'path')).isDirectory())
+            .to.be.true;
+
+          expect(fs.statSync(path.join(tmpDir, 'path/to')).isDirectory())
+            .to.be.true;
+        });
+
+        it('creates a folder', () => {
+          expect(fs.statSync(path.join(tmpDir, 'path/to/folder')).isDirectory())
+            .to.be.true;
+        });
       });
-      after(() => fs.unlinkSync(existingFileDescriptor));
 
-      it('does not overwrite the file', () => {
-        advancedNewFile.createFile(existingFileDescriptor);
+      context('folder with content exists', () => {
+        const existingFolderDescriptor = path.join(tmpDir, 'folder');
+        const existingFileDescriptor = path.join(
+          existingFolderDescriptor,
+          'file.txt'
+        );
+        const newFolderDescriptor = path.join(tmpDir, 'folder') + path.sep;
 
-        expect(fs.readFileSync(existingFileDescriptor, { encoding: 'utf8' }))
-          .to.eq('existing content');
-      });
+        before(() => {
+          fs.mkdirSync(existingFolderDescriptor);
+          fs.appendFileSync(existingFileDescriptor, 'existing content');
+        });
+        after(() => {
+          fs.unlinkSync(existingFileDescriptor);
+          fs.rmdirSync(existingFolderDescriptor);
+        });
 
-      it('returns the path to file', () => {
-        expect(advancedNewFile.createFile(existingFileDescriptor))
-          .to.eq(existingFileDescriptor);
+        it('does not delete folder content', () => {
+          advancedNewFile.createFileOrFolder(newFolderDescriptor);
+
+          expect(
+            fs.readFileSync(existingFileDescriptor, { encoding: 'utf8' })
+          )
+            .to.eq('existing content');
+        });
+
+        it('returns the path to folder', () => {
+          expect(advancedNewFile.createFileOrFolder(newFolderDescriptor))
+            .to.eq(newFolderDescriptor);
+        });
       });
     });
   });
@@ -258,7 +316,7 @@ describe('Advanced New File', () => {
   });
 
   describe('command integration tests', () => {
-    const tmpDir = path.join(__dirname, 'createFile.tmp');
+    const tmpDir = path.join(__dirname, 'createFileOrFolder.tmp');
     beforeEach(() => fs.mkdirSync(tmpDir));
     afterEach(() => removeDirSync(tmpDir));
 
@@ -309,6 +367,56 @@ describe('Advanced New File', () => {
 
         expect(fs.readFileSync(newFileDescriptor, { encoding: 'utf8' }))
           .to.eq('');
+      });
+    });
+
+    it('creates a folder at given path', () => {
+      let command;
+      const registerCommand = (name, commandFn) => command = commandFn;
+
+      const textDocument = 'mock document';
+      const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
+      const showTextDocument = chai.spy();
+      const showErrorMessage = chai.spy();
+
+      const advancedNewFile = proxyquire('../src/extension', {
+        vscode: {
+          commands: { registerCommand },
+          workspace: {
+            rootPath: tmpDir,
+            openTextDocument,
+            getConfiguration() { return {}; }
+          },
+          window: {
+            showErrorMessage,
+            showQuickPick: () => Promise.resolve('path/to'),
+            showInputBox: () => Promise.resolve('input/path/to/folder/'),
+            showTextDocument
+          }
+        },
+        fs: {
+          statSync: () => {
+            return { isDirectory: () => true };
+          }
+        }
+      });
+
+      const context = { subscriptions: [] };
+
+      advancedNewFile.activate(context);
+
+      const newFolderDescriptor =
+        path.join(tmpDir, 'path/to/input/path/to/folder/');
+
+      return command().then(() => {
+        expect(openTextDocument)
+          .to.not.have.been.called.with(newFolderDescriptor);
+
+        expect(showTextDocument)
+          .to.not.have.been.called.with(textDocument);
+
+        expect(fs.statSync(newFolderDescriptor).isDirectory())
+          .to.be.true;
       });
     });
 
