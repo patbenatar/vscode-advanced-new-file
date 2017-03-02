@@ -370,7 +370,7 @@ describe('Advanced New File', () => {
       });
     });
 
-    it('creates a folder at given path', () => {
+    it('creates a folder at given path and shows information message', () => {
       let command;
       const registerCommand = (name, commandFn) => command = commandFn;
 
@@ -378,6 +378,7 @@ describe('Advanced New File', () => {
       const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
       const showTextDocument = chai.spy();
       const showErrorMessage = chai.spy();
+      const showInformationMessage = chai.spy();
 
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
@@ -391,6 +392,7 @@ describe('Advanced New File', () => {
             showErrorMessage,
             showQuickPick: () => Promise.resolve('path/to'),
             showInputBox: () => Promise.resolve('input/path/to/folder/'),
+            showInformationMessage,
             showTextDocument
           }
         },
@@ -414,6 +416,9 @@ describe('Advanced New File', () => {
 
         expect(showTextDocument)
           .to.not.have.been.called.with(textDocument);
+
+        expect(showInformationMessage)
+          .to.have.been.called.with(`Folder created: ${newFolderDescriptor}`);
 
         expect(fs.statSync(newFolderDescriptor).isDirectory())
           .to.be.true;

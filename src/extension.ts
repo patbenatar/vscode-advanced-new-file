@@ -107,6 +107,7 @@ export function createFileOrFolder(absolutePath: string): string {
 
 export function openFile(absolutePath: string): PromiseLike<string> {
   if (isFolderDescriptor(absolutePath)) {
+    vscode.window.showInformationMessage(`Folder created: ${absolutePath}`);
     return Promise.resolve(absolutePath);
   }
 
