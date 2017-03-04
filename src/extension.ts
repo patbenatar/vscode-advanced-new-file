@@ -10,6 +10,10 @@ import { sync as globSync } from 'glob';
 const systemRoot =
   (platform() === 'win32') ? `${process.cwd().split(path.sep)[0]}\\` : '/';
 
+function isFolderDescriptor (filepath) {
+  return filepath.charAt(filepath.length - 1) === path.sep;
+}
+
 function invertGlob(pattern) {
   return pattern.replace(/^!/, '');
 }
@@ -86,18 +90,27 @@ export function directories(root: string): Promise<string[]> {
   });
 }
 
-export function createFile(absolutePath: string): string {
+export function createFileOrFolder(absolutePath: string): string {
   let directoryToFile = path.dirname(absolutePath);
 
   if (!fs.existsSync(absolutePath)) {
-    mkdirp.sync(directoryToFile);
-    fs.appendFileSync(absolutePath, '');
+    if (isFolderDescriptor(absolutePath)) {
+      mkdirp.sync(absolutePath);
+    } else {
+      mkdirp.sync(directoryToFile);
+      fs.appendFileSync(absolutePath, '');
+    }
   }
 
   return absolutePath;
 }
 
 export function openFile(absolutePath: string): PromiseLike<string> {
+  if (isFolderDescriptor(absolutePath)) {
+    vscode.window.showInformationMessage(`Folder created: ${absolutePath}`);
+    return Promise.resolve(absolutePath);
+  }
+
   return vscode.workspace.openTextDocument(absolutePath)
     .then((textDocument): PromiseLike<string> => {
       if (textDocument) {
@@ -128,7 +141,7 @@ export function activate(context: vscode.ExtensionContext) {
           .then(showInputBox)
           .then(guardNoSelection)
           .then(resolveAbsolutePath)
-          .then(createFile)
+          .then(createFileOrFolder)
           .then(openFile)
           .then(noop, noop); // Silently handle rejections for now
       } else {
