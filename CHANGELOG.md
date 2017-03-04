@@ -1,3 +1,8 @@
+# 0.4.0
+
+* Create a directory instead of a file by suffixing the file path with `/`
+  (thanks to [maximilianschmitt](https://github.com/maximilianschmitt))
+
 # 0.3.2
 
 ## What's New

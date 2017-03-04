@@ -13,6 +13,7 @@ files anywhere in your workspace.
 * Fuzzy-matching autocomplete to create new file relative to existing path
 * Create new directories while creating a new file
 * Create a directory instead of a file by suffixing the file path with `/`
+  (thanks to [maximilianschmitt](https://github.com/maximilianschmitt))
 * Ignores gitignored and workspace ignored directories
 
 ## Usage
