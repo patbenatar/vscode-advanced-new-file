@@ -1,5 +1,11 @@
+# 0.4.1
+
+## Bug Fixes
+* Fix an issue causing a stack level too deep error on Windows
+
 # 0.4.0
 
+## What's New
 * Create a directory instead of a file by suffixing the file path with `/`
   (thanks to [maximilianschmitt](https://github.com/maximilianschmitt))
 
