@@ -22,7 +22,7 @@ function walkupGitignores(dir, found = []) {
   const gitignore = path.join(dir, '.gitignore');
   if (fs.existsSync(gitignore)) found.push(gitignore);
 
-  if (dir !== systemRoot) {
+  if (dir.toLowerCase() !== systemRoot.toLowerCase()) {
     return walkupGitignores(path.resolve(dir, '..'), found);
   } else {
     return found;
