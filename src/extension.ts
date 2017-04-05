@@ -7,10 +7,9 @@ import { curry, noop } from 'lodash';
 import * as gitignoreToGlob from 'gitignore-to-glob';
 import { platform } from 'os';
 import { sync as globSync } from 'glob';
-const systemRoot =
-  (platform() === 'win32') ? `${process.cwd().split(path.sep)[0]}\\` : '/';
-
-function isFolderDescriptor (filepath) {
+const systemRoot = (platform() === 'win32') ?
+  `${(path.resolve(vscode.workspace.rootPath) || './').split(path.sep)[0]}\\` : '/';
+function isFolderDescriptor(filepath) {
   return filepath.charAt(filepath.length - 1) === path.sep;
 }
 
@@ -60,7 +59,7 @@ function directoriesSync(root: string): string[] {
 export function showQuickPick(choices: Promise<string[]>) {
   return vscode.window.showQuickPick(choices, {
     placeHolder: 'First, select an existing path to create relative to ' +
-                 '(larger projects may take a moment to load)'
+    '(larger projects may take a moment to load)'
   });
 }
 
@@ -155,4 +154,4 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-export function deactivate() {}
+export function deactivate() { }
