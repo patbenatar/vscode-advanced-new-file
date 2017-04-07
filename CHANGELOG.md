@@ -1,3 +1,11 @@
+# 0.4.2
+
+## Bug Fixes
+* Fixes keyboard shortcut on Mac. Formerly we hacked around a VS Code issue in
+  order to get the desired keyboard shortcut, but that issue has been fixed in
+  latest VS Code. NOTE: This may introduce keyboard shortcut issues in
+  earlier versions of VS Code (< 1.11.1)
+
 # 0.4.1
 
 ## Bug Fixes
