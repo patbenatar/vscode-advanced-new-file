@@ -30,7 +30,7 @@
       {
         "command": "extension.advancedNewFile",
         "key": "alt+ctrl+n",
-        "mac": "alt+cmd+`"
+        "mac": "alt+cmd+n"
       }
     ]
   },
