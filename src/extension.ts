@@ -5,10 +5,8 @@ import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 import { curry, noop } from 'lodash';
 import * as gitignoreToGlob from 'gitignore-to-glob';
-import { platform } from 'os';
 import { sync as globSync } from 'glob';
-const systemRoot = (platform() === 'win32') ?
-  `${(path.resolve(vscode.workspace.rootPath) || './').split(path.sep)[0]}\\` : '/';
+
 function isFolderDescriptor(filepath) {
   return filepath.charAt(filepath.length - 1) === path.sep;
 }
@@ -21,8 +19,11 @@ function walkupGitignores(dir, found = []) {
   const gitignore = path.join(dir, '.gitignore');
   if (fs.existsSync(gitignore)) found.push(gitignore);
 
-  if (dir.toLowerCase() !== systemRoot.toLowerCase()) {
-    return walkupGitignores(path.resolve(dir, '..'), found);
+  const parentDir = path.resolve(dir, '..');
+  const reachedSystemRoot = dir === parentDir;
+
+  if (!reachedSystemRoot) {
+    return walkupGitignores(parentDir, found);
   } else {
     return found;
   }
