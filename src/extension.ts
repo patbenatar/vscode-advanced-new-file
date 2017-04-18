@@ -5,12 +5,9 @@ import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 import { curry, noop } from 'lodash';
 import * as gitignoreToGlob from 'gitignore-to-glob';
-import { platform } from 'os';
 import { sync as globSync } from 'glob';
-const systemRoot =
-  (platform() === 'win32') ? `${process.cwd().split(path.sep)[0]}\\` : '/';
 
-function isFolderDescriptor (filepath) {
+function isFolderDescriptor(filepath) {
   return filepath.charAt(filepath.length - 1) === path.sep;
 }
 
@@ -22,8 +19,11 @@ function walkupGitignores(dir, found = []) {
   const gitignore = path.join(dir, '.gitignore');
   if (fs.existsSync(gitignore)) found.push(gitignore);
 
-  if (dir.toLowerCase() !== systemRoot.toLowerCase()) {
-    return walkupGitignores(path.resolve(dir, '..'), found);
+  const parentDir = path.resolve(dir, '..');
+  const reachedSystemRoot = dir === parentDir;
+
+  if (!reachedSystemRoot) {
+    return walkupGitignores(parentDir, found);
   } else {
     return found;
   }
@@ -60,7 +60,7 @@ function directoriesSync(root: string): string[] {
 export function showQuickPick(choices: Promise<string[]>) {
   return vscode.window.showQuickPick(choices, {
     placeHolder: 'First, select an existing path to create relative to ' +
-                 '(larger projects may take a moment to load)'
+    '(larger projects may take a moment to load)'
   });
 }
 
@@ -155,4 +155,4 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-export function deactivate() {}
+export function deactivate() { }
