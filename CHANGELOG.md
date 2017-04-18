@@ -1,3 +1,9 @@
+# 0.4.3
+
+## Bug Fixes
+* Fix a crash on Windows when the project directory is on a different drive
+  than the VS Code installation.
+
 # 0.4.2
 
 ## Bug Fixes
