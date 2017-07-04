@@ -140,7 +140,6 @@ export function guardNoSelection(selection?: string): PromiseLike<string> {
 export function handleRepeatLast(selection): PromiseLike<string> {
   const repeatLast = vscode.workspace.getConfiguration('adv-new-file').get('repeatLast');
   if (repeatLast) {
-    console.log(selection);
     cache.put('last', selection);
   }
   return Promise.resolve(selection);
