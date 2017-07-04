@@ -67,6 +67,7 @@
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
     "glob": "^7.1.1",
     "lodash": "^4.17.2",
-    "mkdirp": "^0.5.1"
+    "mkdirp": "^0.5.1",
+    "vscode-cache": "^0.3.0"
   }
 }

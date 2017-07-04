@@ -14,8 +14,19 @@ files anywhere in your workspace.
 * Create new directories while creating a new file
 * Create a directory instead of a file by suffixing the file path with `/` as in `somedirectory/` to create the directory (thanks to [maximilianschmitt](https://github.com/maximilianschmitt))
 * Ignores gitignored and workspace `files.exclude` settings.
-* Additional option of adding `adv-new-file.exclude` settings to workspace settings just like native `files.exlude` except it explicitly effects AdvancedNewFile plugin only.
+* Additional option of adding `advancedNewFile.exclude` settings to workspace settings just like native `files.exlude` except it explicitly effects AdvancedNewFile plugin only. (thanks to [Kaffiend](https://github.com/Kaffiend))
 
+## Configuration Example
+```
+ "advancedNewFile": {
+    "exclude": {
+      "node_modules": true,
+      "node_modules_electron": true,
+      "dev": true,
+      "dist": true
+    }
+  }
+```
 ## Usage
 
 * Command palette: "Advanced New File"
