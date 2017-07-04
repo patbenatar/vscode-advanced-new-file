@@ -1,5 +1,6 @@
 environment:
   ELECTRON_NO_ATTACH_CONSOLE: 1
+  CODE_VERSION: 1.12.2
 
 install:
   - ps: Install-Product node 7.5.0 x64
