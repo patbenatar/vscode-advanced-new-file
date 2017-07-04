@@ -61,7 +61,7 @@ function directoriesSync(root: string): string[] {
   results.unshift('/');
 
   const repeatLast = vscode.workspace.getConfiguration('adv-new-file').get('repeatLast');
-  if (repeatLast) {
+  if (repeatLast && cache.has('last')) {
     let last = cache.get('last', '/');
     results.unshift(last);
   }
