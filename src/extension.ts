@@ -38,8 +38,7 @@ function directoriesSync(root: string): string[] {
   const gitignoreGlobs =
     gitignoreFiles.map(gitignoreToGlob).reduce(flatten, []);
 
-  const configFilesExclude =
-    vscode.workspace.getConfiguration('files.exclude');
+  const configFilesExclude = Object.assign([], vscode.workspace.getConfiguration('adv-new-file.exclude'), vscode.workspace.getConfiguration('files.exclude'));
   const workspaceIgnored = Object.keys(configFilesExclude)
     .filter(key => configFilesExclude[key] === true);
   const workspaceIgnoredGlobs =
