@@ -1,3 +1,12 @@
+# 0.5.0
+
+## What's New
+* Adds an `advancedNewFile.exclude` configuration option in case you want the
+  plugin to ignore a set of directories that aren't ignored in your
+  workspace `files.exclude` config or `.gitignore`
+* Add some "quick picks" to the top of the directory list: last selection, dir
+  of currently open file, workspace root.
+
 # 0.4.3
 
 ## Bug Fixes
