@@ -280,6 +280,19 @@ describe('Advanced New File', () => {
   });
 
   describe('openFile', () => {
+    const mockGetConfiguration = function(config = { showInformationMessages: true }) {
+      return function(name) {
+        switch (name) {
+          case 'advancedNewFile':
+            return {
+              get: (configName) => config[configName]
+            };
+          default:
+            return {};
+        }
+      };
+    };
+
     it('attempts to open the file', () => {
       const textDocument = 'mock document';
       const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
@@ -287,7 +300,10 @@ describe('Advanced New File', () => {
 
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
-          workspace: { openTextDocument },
+          workspace: {
+            openTextDocument,
+            getConfiguration: mockGetConfiguration()
+          },
           window: { showTextDocument }
         }
       });
@@ -305,7 +321,10 @@ describe('Advanced New File', () => {
 
         const advancedNewFile = proxyquire('../src/extension', {
           vscode: {
-            workspace: { openTextDocument },
+            workspace: {
+              openTextDocument,
+              getConfiguration: mockGetConfiguration()
+            },
             window: { showTextDocument }
           }
         });
@@ -322,7 +341,10 @@ describe('Advanced New File', () => {
 
         const advancedNewFile = proxyquire('../src/extension', {
           vscode: {
-            workspace: { openTextDocument },
+            workspace: {
+              openTextDocument,
+              getConfiguration: mockGetConfiguration()
+            },
             window: { showTextDocument }
           }
         });
@@ -340,13 +362,83 @@ describe('Advanced New File', () => {
 
         const advancedNewFile = proxyquire('../src/extension', {
           vscode: {
-            workspace: { openTextDocument },
+            workspace: {
+              openTextDocument,
+              getConfiguration: mockGetConfiguration()
+            },
             window: { showTextDocument }
           }
         });
 
         return expect(advancedNewFile.openFile('/path/to/file.ts'))
           .to.eventually.be.rejectedWith('Could not open document');
+      });
+    });
+
+    context('file is a folder', () => {
+      it('does not attempt to open it', () => {
+        const openTextDocument = chai.spy();
+        const showInformationMessage = chai.spy();
+
+        const advancedNewFile = proxyquire('../src/extension', {
+          vscode: {
+            workspace: {
+              openTextDocument,
+              getConfiguration: mockGetConfiguration()
+            },
+            window: {
+              showInformationMessage
+            }
+          }
+        });
+
+        advancedNewFile.openFile('/path/to/folder/').then(() => {
+          expect(openTextDocument).not.to.have.been.called();
+        });
+      });
+
+      it('displays an informational message instead', () => {
+        const openTextDocument = chai.spy();
+        const showInformationMessage = chai.spy();
+
+        const advancedNewFile = proxyquire('../src/extension', {
+          vscode: {
+            workspace: {
+              openTextDocument,
+              getConfiguration: mockGetConfiguration()
+            },
+            window: {
+              showInformationMessage
+            }
+          }
+        });
+
+        advancedNewFile.openFile('/path/to/folder/').then(() => {
+          expect(showInformationMessage).to.have.been.called.with('Folder created: /path/to/folder/');
+        });
+      });
+
+      context('informational messages disabled in config', () => {
+        it('does not display an informational message', () => {
+          const openTextDocument = chai.spy();
+          const showInformationMessage = chai.spy();
+
+          const advancedNewFile = proxyquire('../src/extension', {
+            vscode: {
+              workspace: {
+                openTextDocument,
+                getConfiguration: mockGetConfiguration({ showInformationMessages: false })
+              },
+              window: {
+                showInformationMessage
+              }
+            }
+          });
+
+          advancedNewFile.openFile('/path/to/folder/').then(() => {
+            expect(showInformationMessage).not.to.have.been.called();
+          });
+        });
       });
     });
   });
@@ -584,7 +676,7 @@ describe('Advanced New File', () => {
               switch (name) {
                 case 'advancedNewFile':
                   return {
-                    get: () => {}
+                    get: (name, defaultValue) => defaultValue
                   };
                 default:
                   return {};
@@ -630,6 +722,77 @@ describe('Advanced New File', () => {
 
         expect(fs.statSync(newFolderDescriptor).isDirectory())
           .to.be.true;
+      });
+    });
+
+    context('info messages disabled in settings', () => {
+      it('creates a folder at given path and does not show information ' +
+         'message', () => {
+        let command;
+        const registerCommand = (name, commandFn) => command = commandFn;
+
+        const textDocument = 'mock document';
+        const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
+        const showTextDocument = chai.spy();
+        const showErrorMessage = chai.spy();
+        const showInformationMessage = chai.spy();
+
+        const advancedNewFile = proxyquire('../src/extension', {
+          vscode: {
+            commands: { registerCommand },
+            workspace: {
+              rootPath: tmpDir,
+              openTextDocument,
+              getConfiguration(name) {
+                switch (name) {
+                  case 'advancedNewFile':
+                    return {
+                      get: (name, defaultValue) => false
+                    };
+                  default:
+                    return {};
+                }
+              }
+            },
+            window: {
+              showErrorMessage,
+              showQuickPick: () => Promise.resolve({ label: 'path/to' }),
+              showInputBox: () => Promise.resolve('input/path/to/folder/'),
+              showInformationMessage,
+              showTextDocument
+            }
+          },
+          fs: {
+            statSync: () => {
+              return { isDirectory: () => true };
+            }
+          },
+          'vscode-cache': class Cache {
+            get() {}
+            has() { return false }
+            put() {}
+          }
+        });
+
+        const context = { subscriptions: [] };
+
+        advancedNewFile.activate(context);
+
+        const newFolderDescriptor =
+          path.join(tmpDir, 'path/to/input/path/to/folder/');
+
+        return command().then(() => {
+          expect(openTextDocument)
+            .to.not.have.been.called.with(newFolderDescriptor);
+
+          expect(showTextDocument)
+            .to.not.have.been.called.with(textDocument);
+
+          expect(showInformationMessage).to.not.have.been.called();
+
+          expect(fs.statSync(newFolderDescriptor).isDirectory())
+            .to.be.true;
+        });
       });
     });
 

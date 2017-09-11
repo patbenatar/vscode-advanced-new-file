@@ -17,6 +17,7 @@ files anywhere in your workspace.
 * Additional option of adding `advancedNewFile.exclude` settings to workspace settings just like native `files.exlude` except it explicitly effects AdvancedNewFile plugin only. (thanks to [Kaffiend](https://github.com/Kaffiend))
 
 ## Configuration Example
+
 ```
  "advancedNewFile": {
     "exclude": {
@@ -24,9 +25,11 @@ files anywhere in your workspace.
       "node_modules_electron": true,
       "dev": true,
       "dist": true
-    }
+    },
+    "showInformationMessages": false
   }
 ```
+
 ## Usage
 
 * Command palette: "Advanced New File"
