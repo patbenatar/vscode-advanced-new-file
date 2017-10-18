@@ -188,7 +188,6 @@ export function activate(context: vscode.ExtensionContext) {
       if (root) {
         const cache = new Cache(context, `workspace:${root}`);
         const resolverArgsCount = 2;
-        const resolveAbsolutePath = curry(path.join, resolverArgsCount)(root);
 
         const choices = directories(root)
           .then(toQuickPickItems)
@@ -202,7 +201,6 @@ export function activate(context: vscode.ExtensionContext) {
           .then(cacheSelection(cache))
           .then(showInputBox)
           .then(guardNoSelection)
-          .then(resolveAbsolutePath)
           .then(createFileOrFolder)
           .then(openFile)
           .then(noop, noop); // Silently handle rejections for now
