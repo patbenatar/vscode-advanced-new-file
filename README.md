@@ -32,6 +32,15 @@ files anywhere in your workspace.
 * Command palette: "Advanced New File"
 * Keyboard shortcut: cmd+alt+n (Mac), ctrl+alt+n (Win, Linux)
 
+## Keybindings
+You can add your own keybinding in your `keybindings.json`
+```
+{
+  "key": "ctrl+n", // "mac": "cmd+n"
+  "command": "extension.advancedNewFile",
+}
+```
+
 ## Notes
 
 Because VSCode extensions don't yet have the ability to do type-ahead
