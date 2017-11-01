@@ -36,7 +36,7 @@ files anywhere in your workspace.
 You can add your own keybinding in your `keybindings.json`
 ```
 {
-  "key": "ctrl+n", // "mac": "cmd+n"
+  "key": "ctrl+n", // "cmd+n" on mac
   "command": "extension.advancedNewFile",
 }
 ```
