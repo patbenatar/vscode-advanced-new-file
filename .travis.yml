@@ -17,6 +17,7 @@ before_install:
 
 install:
   - npm install
+  - tsc --version
   - npm run vscode:prepublish
 
 script:
