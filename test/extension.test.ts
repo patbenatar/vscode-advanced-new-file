@@ -392,7 +392,7 @@ describe('Advanced New File', () => {
           }
         });
 
-        advancedNewFile.openFile('/path/to/folder/').then(() => {
+        advancedNewFile.openFile(path.join('path/to/folder/')).then(() => {
           expect(openTextDocument).not.to.have.been.called();
         });
       });
@@ -413,7 +413,7 @@ describe('Advanced New File', () => {
           }
         });
 
-        advancedNewFile.openFile('/path/to/folder/').then(() => {
+        advancedNewFile.openFile(path.join('path/to/folder/')).then(() => {
           expect(showInformationMessage).to.have.been.called.with('Folder created: /path/to/folder/');
         });
       });
@@ -435,7 +435,7 @@ describe('Advanced New File', () => {
             }
           });
 
-          advancedNewFile.openFile('/path/to/folder/').then(() => {
+          advancedNewFile.openFile(path.join('path/to/folder/')).then(() => {
             expect(showInformationMessage).not.to.have.been.called();
           });
         });
