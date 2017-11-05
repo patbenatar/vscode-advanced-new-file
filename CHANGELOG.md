@@ -1,3 +1,9 @@
+# 0.5.1
+
+## What's New
+* Adds an `advancedNewFile.showInformationMessages` configuration option to
+  control whether top-bar notifications display. Enabled by default.
+
 # 0.5.0
 
 ## What's New

@@ -32,7 +32,24 @@
         "key": "alt+ctrl+n",
         "mac": "alt+cmd+n"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "AdvancedNewFile configuration",
+      "properties": {
+        "advancedNewFile.exclude": {
+          "type": ["object", "null"],
+          "additionalProperties": { "type": "boolean" },
+          "default": null,
+          "description": "Directories to ignore in auto-complete"
+        },
+        "advancedNewFile.showInformationMessages": {
+          "type": "boolean",
+          "default": true,
+          "description": "Control whether top-bar notifications display"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
