@@ -57,7 +57,7 @@ function directoriesSync(root: string): string[] {
 
   const results = globSync('**', { cwd: root, ignore })
     .filter(f => fs.statSync(path.join(root, f)).isDirectory())
-    .map(f => '/' + f);
+    .map(f => path.sep + path.normalize(f));
 
   return results;
 }
