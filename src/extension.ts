@@ -185,35 +185,42 @@ export function unwrapSelection(selection?: vscode.QuickPickItem): string {
 export function activate(context: vscode.ExtensionContext) {
   let disposable =
     vscode.commands.registerCommand('extension.advancedNewFile', () => {
-      const root = vscode.workspace.rootPath;
+      const editor = vscode.window.activeTextEditor;
+      let currentFileRoot: string = undefined;
 
-      if (root) {
-        const cache = new Cache(context, `workspace:${root}`);
-        const resolverArgsCount = 2;
-        const resolveAbsolutePath = curry(path.join, resolverArgsCount)(root);
-
-        const choices = directories(root)
-          .then(toQuickPickItems)
-          .then(prependChoice('/', '- workspace root'))
-          .then(prependChoice(currentEditorPath(), '- current file'))
-          .then(prependChoice(lastSelection(cache), '- last selection'));
-
-        return showQuickPick(choices)
-          .then(unwrapSelection)
-          .then(guardNoSelection)
-          .then(cacheSelection(cache))
-          .then(showInputBox)
-          .then(guardNoSelection)
-          .then(resolveAbsolutePath)
-          .then(createFileOrFolder)
-          .then(openFile)
-          .then(noop, noop); // Silently handle rejections for now
-      } else {
-        return vscode.window.showErrorMessage(
-          'It doesn\'t look like you have a folder opened in your workspace. ' +
-          'Try opening a folder first.'
-        );
+      if (editor) {
+        currentFileRoot = vscode.workspace.getWorkspaceFolder(editor.document.uri).uri.fsPath;
       }
+
+      const cache = new Cache(context, `workspace:${currentFileRoot}`);
+      const resolverArgsCount = 2;
+
+      const currentFilePicks = currentFileRoot ? directories(currentFileRoot) : Promise.resolve([]);
+
+      const choices = currentFilePicks
+        .then(toQuickPickItems)
+        .then((itemsBeforeWorkspaceRoots) => {
+          return vscode.workspace.workspaceFolders.reduce(
+            (items, wsFolder) => prependChoice(
+              wsFolder.uri.fsPath,
+              `- workspace ${wsFolder.name} root`)(items),
+            itemsBeforeWorkspaceRoots
+          );
+        })
+        .then(prependChoice(currentEditorPath(), '- current file'))
+        .then(prependChoice(lastSelection(cache), '- last selection'));
+
+      return showQuickPick(choices)
+        .then(unwrapSelection)
+        .then(guardNoSelection)
+        .then(cacheSelection(cache))
+        .then(showInputBox)
+        .then(guardNoSelection)
+        //.then(resolveAbsolutePath)
+        .then(createFileOrFolder)
+        .then(openFile)
+        .then(noop, noop); // Silently handle rejections for now
+
     });
 
   context.subscriptions.push(disposable);
