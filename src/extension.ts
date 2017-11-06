@@ -57,7 +57,7 @@ function directoriesSync(root: string): string[] {
 
   const results = globSync('**', { cwd: root, ignore })
     .filter(f => fs.statSync(path.join(root, f)).isDirectory())
-    .map(f => path.sep + path.normalize(f));
+    .map(f => path.normalize(f));
 
   return results;
 }
@@ -196,6 +196,13 @@ export function activate(context: vscode.ExtensionContext) {
       const resolverArgsCount = 2;
 
       const currentFilePicks = currentFileRoot ? directories(currentFileRoot) : Promise.resolve([]);
+      const resolveAbsolutePath = (typedPath) => {
+        if (!currentFileRoot) {
+          return typedPath;
+        }
+
+        return path.resolve(currentFileRoot, typedPath);
+      }
 
       const choices = currentFilePicks
         .then(toQuickPickItems)
@@ -216,7 +223,7 @@ export function activate(context: vscode.ExtensionContext) {
         .then(cacheSelection(cache))
         .then(showInputBox)
         .then(guardNoSelection)
-        //.then(resolveAbsolutePath)
+        .then(resolveAbsolutePath)
         .then(createFileOrFolder)
         .then(openFile)
         .then(noop, noop); // Silently handle rejections for now
