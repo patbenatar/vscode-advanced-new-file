@@ -59,11 +59,11 @@ describe('Advanced New File', () => {
   describe('directories', () => {
     const dummyProjectRoot = path.join(__dirname, 'dummy_project');
 
-    it('only returns directories, prepended with /', async () => {
+    it('only returns directories', async () => {
       let result = await advancedNewFile.directories(dummyProjectRoot);
 
-      expect(result).to.include('/folder');
-      expect(result).not.to.include('/folder/file');
+      expect(result).to.include('folder');
+      expect(result).not.to.include(path.join('folder', 'file'));
     });
 
     context('with a gitignore file', () => {
@@ -75,12 +75,12 @@ describe('Advanced New File', () => {
 
       it('does not include gitignored directories', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).not.to.include('/ignored');
+        expect(result).not.to.include('ignored');
       });
 
       it('does not include nested gitignored directories', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).not.to.include('/folder/nested-ignored');
+        expect(result).not.to.include(path.join('folder', 'nested-ignored'));
       });
     });
 
@@ -103,8 +103,8 @@ describe('Advanced New File', () => {
       it('ignores as specified in both gitignore files', async () => {
         let result = await advancedNewFile.directories(testProjectRoot);
 
-        expect(result).not.to.include('/nested-ignored');
-        expect(result).not.to.include('/nested');
+        expect(result).not.to.include('nested-ignored');
+        expect(result).not.to.include('nested');
       });
     });
 
@@ -131,12 +131,12 @@ describe('Advanced New File', () => {
 
       it('does not include directories with a true value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).not.to.include('/ignored');
+        expect(result).not.to.include('ignored');
       });
 
       it('includes directories with a false value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).to.include('/folder');
+        expect(result).to.include('folder');
       });
     });
 
@@ -165,12 +165,12 @@ describe('Advanced New File', () => {
 
       it('does not include directories with a true value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).not.to.include('/ignored');
+        expect(result).not.to.include('ignored');
       });
 
       it('includes directories with a false value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).to.include('/folder');
+        expect(result).to.include('folder');
       });
     });
   });
@@ -224,7 +224,7 @@ describe('Advanced New File', () => {
 
     context('creating folder', () => {
       context('folder does not exist', () => {
-        const newFolderDescriptor = path.join(tmpDir, 'path/to/folder') +
+        const newFolderDescriptor = path.join(tmpDir, 'path', 'to', 'folder') +
           path.sep;
 
         after(() => fs.rmdirSync(newFolderDescriptor));
@@ -235,12 +235,12 @@ describe('Advanced New File', () => {
           expect(fs.statSync(path.join(tmpDir, 'path')).isDirectory())
             .to.be.true;
 
-          expect(fs.statSync(path.join(tmpDir, 'path/to')).isDirectory())
+          expect(fs.statSync(path.join(tmpDir, 'path', 'to')).isDirectory())
             .to.be.true;
         });
 
         it('creates a folder', () => {
-          expect(fs.statSync(path.join(tmpDir, 'path/to/folder')).isDirectory())
+          expect(fs.statSync(path.join(tmpDir, 'path', 'to', 'folder')).isDirectory())
             .to.be.true;
         });
       });
@@ -620,8 +620,8 @@ describe('Advanced New File', () => {
           },
           window: {
             showErrorMessage,
-            showQuickPick: () => Promise.resolve({ label: 'path/to' }),
-            showInputBox: () => Promise.resolve('input/path/to/file.rb'),
+            showQuickPick: () => Promise.resolve({ label: path.join('path', 'to') }),
+            showInputBox: () => Promise.resolve(path.join('input', 'path', 'to', 'file.rb')),
             showTextDocument
           }
         },
@@ -642,7 +642,7 @@ describe('Advanced New File', () => {
       advancedNewFile.activate(context);
 
       const newFileDescriptor =
-        path.join(tmpDir, 'path/to/input/path/to/file.rb');
+        path.join(tmpDir, 'path', 'to', 'input', 'path', 'to', 'file.rb');
 
       return command().then(() => {
         expect(openTextDocument)
@@ -685,8 +685,8 @@ describe('Advanced New File', () => {
           },
           window: {
             showErrorMessage,
-            showQuickPick: () => Promise.resolve({ label: 'path/to' }),
-            showInputBox: () => Promise.resolve('input/path/to/folder/'),
+            showQuickPick: () => Promise.resolve({ label: path.join('path', 'to') }),
+            showInputBox: () => Promise.resolve(path.join('input', 'path', 'to', 'folder')),
             showInformationMessage,
             showTextDocument
           }
@@ -708,7 +708,7 @@ describe('Advanced New File', () => {
       advancedNewFile.activate(context);
 
       const newFolderDescriptor =
-        path.join(tmpDir, 'path/to/input/path/to/folder/');
+        path.join(tmpDir, 'path', 'to', 'input', 'path', 'to', 'folder');
 
       return command().then(() => {
         expect(openTextDocument)
@@ -756,8 +756,8 @@ describe('Advanced New File', () => {
             },
             window: {
               showErrorMessage,
-              showQuickPick: () => Promise.resolve({ label: 'path/to' }),
-              showInputBox: () => Promise.resolve('input/path/to/folder/'),
+              showQuickPick: () => Promise.resolve({ label: path.join('path', 'to') }),
+              showInputBox: () => Promise.resolve(path.join('input', 'path', 'to', 'folder')),
               showInformationMessage,
               showTextDocument
             }
@@ -779,7 +779,7 @@ describe('Advanced New File', () => {
         advancedNewFile.activate(context);
 
         const newFolderDescriptor =
-          path.join(tmpDir, 'path/to/input/path/to/folder/');
+         path.join(tmpDir, 'path', 'to', 'input', 'path', 'to', 'folder');
 
         return command().then(() => {
           expect(openTextDocument)
