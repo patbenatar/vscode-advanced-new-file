@@ -27,6 +27,12 @@ interface DirectoryOption {
   fsLocation: FSLocation;
 }
 
+declare module 'vscode' {
+  interface QuickPickItem {
+    option?: DirectoryOption
+  }
+}
+
 function isFolderDescriptor(filepath) {
   return filepath.charAt(filepath.length - 1) === path.sep;
 }
@@ -120,23 +126,29 @@ export function directories(root: string): Promise<FSLocation[]> {
   });
 }
 
-export function toQuickPickItems(options: DirectoryOption[]): vscode.QuickPickItem[] {
+export function toQuickPickItems(
+  options: DirectoryOption[]): vscode.QuickPickItem[] {
+
   return options.map((option) => {
     return {
       label: option.displayText,
       description: null,
-      option: option
+      option
     };
   });
 }
 
-export function prependChoice(choices: vscode.QuickPickItem[], option: DirectoryOption, description: string): vscode.QuickPickItem[] {
+export function prependChoice(
+  choices: vscode.QuickPickItem[],
+  option: DirectoryOption,
+  description: string): vscode.QuickPickItem[] {
+
   if (option) {
     const choice = {
       label: option.displayText,
-      description: description,
-      option: option
-    }
+      description,
+      option
+    };
 
     choices.unshift(choice);
   }
@@ -168,7 +180,10 @@ export function createFileOrFolder(absolutePath: string): string {
 
 export function openFile(absolutePath: string): Thenable<string> {
   if (isFolderDescriptor(absolutePath)) {
-    if (vscode.workspace.getConfiguration('advancedNewFile').get('showInformationMessages', true)) {
+    const showInformationMessages = vscode.workspace
+      .getConfiguration('advancedNewFile').get('showInformationMessages', true);
+
+    if (showInformationMessages) {
       vscode.window.showInformationMessage(`Folder created: ${absolutePath}`);
     }
     return Promise.resolve(absolutePath);
@@ -190,11 +205,13 @@ export function guardNoSelection<T>(selection?: T): Thenable<T> {
   return Promise.resolve(selection);
 }
 
-export function cacheSelection(cache: Cache): (selection: DirectoryOption) => DirectoryOption {
-  return function(selection) {
+export function cacheSelection(cache: Cache):
+  (selection: DirectoryOption) => DirectoryOption {
+
+  return (selection) => {
     cache.put('last', selection);
     return selection;
-  }
+  };
 }
 
 export function lastSelection(cache: Cache): DirectoryOption {
@@ -202,19 +219,21 @@ export function lastSelection(cache: Cache): DirectoryOption {
   return cache.get('last') as DirectoryOption;
 }
 
-export function unwrapSelection(selection: vscode.QuickPickItem): DirectoryOption {
-  return selection['option'];
+export function unwrapSelection(
+  selection: vscode.QuickPickItem): DirectoryOption {
+
+  return selection.option;
 }
 
 export function workspaceRoots(): WorkspaceRoot[] {
   if (vscode.workspace.workspaceFolders) {
-    const multi = vscode.workspace.workspaceFolders.length > 1
+    const multi = vscode.workspace.workspaceFolders.length > 1;
 
     return vscode.workspace.workspaceFolders.map((folder) => {
       return {
         rootPath: folder.uri.fsPath,
         baseName: path.basename(folder.uri.fsPath),
-        multi: multi,
+        multi,
         vsCodeFolder: folder
       };
     });
@@ -237,14 +256,14 @@ function optionsForRoot(root: WorkspaceRoot): Thenable<DirectoryOption[]> {
         dir.relative;
 
       return {
-        displayText: displayText,
+        displayText,
         fsLocation: dir
       };
   }));
 }
 
 export function prependRootChoices(roots: WorkspaceRoot[]) {
-  return function(choices: vscode.QuickPickItem[]): vscode.QuickPickItem[] {
+  return (choices: vscode.QuickPickItem[]): vscode.QuickPickItem[] => {
     roots.forEach((root) => {
       const option: DirectoryOption = {
         displayText: root.multi ? path.join(path.sep, root.baseName) : path.sep,
@@ -258,31 +277,36 @@ export function prependRootChoices(roots: WorkspaceRoot[]) {
     });
 
     return choices;
-  }
+  };
 }
 
 export function prependCurrentEditorPathChoice(roots: WorkspaceRoot[]) {
-  return function(choices: vscode.QuickPickItem[]): vscode.QuickPickItem[] {
-    const currentFilePath = currentEditorPath()
-    const currentFileRoot = roots.find(r => currentFilePath.indexOf(r.rootPath) === 0)
+  return (choices: vscode.QuickPickItem[]): vscode.QuickPickItem[] => {
+    const currentFilePath = currentEditorPath();
+    const currentFileRoot = currentFilePath &&
+      roots.find(r => currentFilePath.indexOf(r.rootPath) === 0);
 
     if (currentFileRoot) {
       const rootMatcher = new RegExp(`^${currentFileRoot.rootPath}`);
       const relativeCurrentFilePath = currentFilePath.replace(rootMatcher, '');
 
+      const displayText = currentFileRoot.multi ?
+        path.join(path.sep, currentFileRoot.baseName, relativeCurrentFilePath) :
+        relativeCurrentFilePath;
+
       const option: DirectoryOption = {
-        displayText: currentFileRoot.multi ? path.join(path.sep, currentFileRoot.baseName, relativeCurrentFilePath) : relativeCurrentFilePath,
+        displayText,
         fsLocation: {
           relative: relativeCurrentFilePath,
           absolute: currentFilePath
         }
-      }
+      };
 
       prependChoice(choices, option, '- current file');
     }
 
     return choices;
-  }
+  };
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -291,7 +315,7 @@ export function activate(context: vscode.ExtensionContext) {
       const roots = workspaceRoots();
 
       if (roots.length >= 0) {
-        const cacheName = roots.map(r => r.rootPath).join(';')
+        const cacheName = roots.map(r => r.rootPath).join(';');
         const cache = new Cache(context, `workspace:${cacheName}`);
 
         const choices = Promise.map(roots, optionsForRoot)
@@ -299,7 +323,9 @@ export function activate(context: vscode.ExtensionContext) {
           .then(toQuickPickItems)
           .then(prependRootChoices(roots))
           .then(prependCurrentEditorPathChoice(roots))
-          .then((c) => prependChoice(c, lastSelection(cache), '- last selection'));
+          .then(
+            (c) => prependChoice(c, lastSelection(cache), '- last selection')
+          );
 
         return showQuickPick(choices)
           .then(guardNoSelection)
