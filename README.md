@@ -19,15 +19,13 @@ files anywhere in your workspace.
 ## Configuration Example
 
 ```
- "advancedNewFile": {
-    "exclude": {
-      "node_modules": true,
-      "node_modules_electron": true,
-      "dev": true,
-      "dist": true
-    },
-    "showInformationMessages": false
-  }
+"advancedNewFile.exclude": {
+    "node_modules": true,
+    "node_modules_electron": true,
+    "dev": true,
+    "dist": true
+},
+"advancedNewFile.showInformationMessages": true
 ```
 
 ## Usage
