@@ -57,7 +57,7 @@ function directoriesSync(root: string): string[] {
 
   const results = globSync('**', { cwd: root, ignore })
     .filter(f => fs.statSync(path.join(root, f)).isDirectory())
-    .map(f => '/' + f);
+    .map(f => path.normalize(f));
 
   return results;
 }
@@ -185,16 +185,36 @@ export function unwrapSelection(selection?: vscode.QuickPickItem): string {
 export function activate(context: vscode.ExtensionContext) {
   let disposable =
     vscode.commands.registerCommand('extension.advancedNewFile', () => {
-      const root = vscode.workspace.rootPath;
+      const editor = vscode.window.activeTextEditor;
+      let currentFileRoot: string = undefined;
 
-      if (root) {
-        const cache = new Cache(context, `workspace:${root}`);
+      if (vscode.workspace.workspaceFolders.length > 0) {
+        if (editor) {
+          currentFileRoot = vscode.workspace.getWorkspaceFolder(editor.document.uri).uri.fsPath;
+        }
+
+        const cache = new Cache(context, `workspace:${currentFileRoot}`);
         const resolverArgsCount = 2;
-        const resolveAbsolutePath = curry(path.join, resolverArgsCount)(root);
 
-        const choices = directories(root)
+        const currentFilePicks = currentFileRoot ? directories(currentFileRoot) : Promise.resolve([]);
+        const resolveAbsolutePath = (typedPath) => {
+          if (!currentFileRoot) {
+            return typedPath;
+          }
+
+          return path.resolve(currentFileRoot, typedPath);
+        }
+
+        const choices = currentFilePicks
           .then(toQuickPickItems)
-          .then(prependChoice('/', '- workspace root'))
+          .then((itemsBeforeWorkspaceRoots) => {
+            return vscode.workspace.workspaceFolders.reduce(
+              (items, wsFolder) => prependChoice(
+                wsFolder.uri.fsPath,
+                `- workspace ${wsFolder.name} root`)(items),
+              itemsBeforeWorkspaceRoots
+            );
+          })
           .then(prependChoice(currentEditorPath(), '- current file'))
           .then(prependChoice(lastSelection(cache), '- last selection'));
 
@@ -208,6 +228,7 @@ export function activate(context: vscode.ExtensionContext) {
           .then(createFileOrFolder)
           .then(openFile)
           .then(noop, noop); // Silently handle rejections for now
+
       } else {
         return vscode.window.showErrorMessage(
           'It doesn\'t look like you have a folder opened in your workspace. ' +
@@ -215,7 +236,6 @@ export function activate(context: vscode.ExtensionContext) {
         );
       }
     });
-
   context.subscriptions.push(disposable);
 }
 
