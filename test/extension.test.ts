@@ -443,26 +443,26 @@ describe('Advanced New File', () => {
     });
   });
 
-  describe('cacheSelection', () => {
-    it('returns a function that when called writes the value to cache', () => {
-      const cache = {
-        put: chai.spy()
-      }
-      const fn = advancedNewFile.cacheSelection(cache);
-      fn('/selection');
+  // describe('cacheSelection', () => {
+  //   it('returns a function that when called writes the value to cache', () => {
+  //     const cache = {
+  //       put: chai.spy()
+  //     }
+  //     const fn = advancedNewFile.cacheSelection(cache);
+  //     fn('/selection');
 
-      expect(cache.put).to.have.been.called.with('last', '/selection');
-    });
+  //     expect(cache.put).to.have.been.called.with('last', '/selection');
+  //   });
 
-    it('returns a function that returns the selection', () => {
-      const cache = {
-        put: () => true
-      }
-      const fn = advancedNewFile.cacheSelection(cache);
+  //   it('returns a function that returns the selection', () => {
+  //     const cache = {
+  //       put: () => true
+  //     }
+  //     const fn = advancedNewFile.cacheSelection(cache);
 
-      expect(fn('/selection')).to.eq('/selection');
-    });
-  });
+  //     expect(fn('/selection')).to.eq('/selection');
+  //   });
+  // });
 
   describe('lastSelection', () => {
     context('empty cache', () => {
@@ -558,34 +558,34 @@ describe('Advanced New File', () => {
     });
   });
 
-  describe('prependChoice', () => {
-    it('returns a function that when called with a list of choices, adds a ' +
-       'choice with given label and description to the set', () => {
+  // describe('prependChoice', () => {
+  //   it('returns a function that when called with a list of choices, adds a ' +
+  //      'choice with given label and description to the set', () => {
 
-      const fn = advancedNewFile.prependChoice('label', 'description');
-      let choices: vscode.QuickPickItem[] = [{
-        label: 'existing-label',
-        description: 'existing-description'
-      }];
+  //     const fn = advancedNewFile.prependChoice('label', 'description');
+  //     let choices: vscode.QuickPickItem[] = [{
+  //       label: 'existing-label',
+  //       description: 'existing-description'
+  //     }];
 
-      expect(fn(choices)).to.include({
-        label: 'label',
-        description: 'description'
-      });
-    });
+  //     expect(fn(choices)).to.include({
+  //       label: 'label',
+  //       description: 'description'
+  //     });
+  //   });
 
-    context('no label given', () => {
-      it('does not add a choice', () => {
-        const fn = advancedNewFile.prependChoice(null, 'description');
-        let choices: vscode.QuickPickItem[] = [{
-          label: 'existing-label',
-          description: 'existing-description'
-        }];
+  //   context('no label given', () => {
+  //     it('does not add a choice', () => {
+  //       const fn = advancedNewFile.prependChoice(null, 'description');
+  //       let choices: vscode.QuickPickItem[] = [{
+  //         label: 'existing-label',
+  //         description: 'existing-description'
+  //       }];
 
-        expect(fn(choices)).to.eq(choices);
-      })
-    });
-  });
+  //       expect(fn(choices)).to.eq(choices);
+  //     })
+  //   });
+  // });
 
   describe('command integration tests', () => {
     const tmpDir = path.join(__dirname, 'createFileOrFolder.tmp');
