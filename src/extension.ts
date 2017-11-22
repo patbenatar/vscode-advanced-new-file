@@ -94,7 +94,7 @@ export function showQuickPick(choices: Promise<vscode.QuickPickItem[]>) {
   });
 }
 
-export function showInputBox(baseDirectory: DirectoryOption) {
+export function showInputBox(baseDirectory: DirectoryOption): Thenable<string> {
   const resolverArgsCount = 2;
   const resolveAbsolutePath =
     curry(path.join, resolverArgsCount)(baseDirectory.fsLocation.absolute);
@@ -166,7 +166,7 @@ export function createFileOrFolder(absolutePath: string): string {
   return absolutePath;
 }
 
-export function openFile(absolutePath: string): PromiseLike<string> {
+export function openFile(absolutePath: string): Thenable<string> {
   if (isFolderDescriptor(absolutePath)) {
     if (vscode.workspace.getConfiguration('advancedNewFile').get('showInformationMessages', true)) {
       vscode.window.showInformationMessage(`Folder created: ${absolutePath}`);
@@ -175,7 +175,7 @@ export function openFile(absolutePath: string): PromiseLike<string> {
   }
 
   return vscode.workspace.openTextDocument(absolutePath)
-    .then((textDocument): PromiseLike<string> => {
+    .then((textDocument): Thenable<string> => {
       if (textDocument) {
         vscode.window.showTextDocument(textDocument);
         return Promise.resolve(absolutePath);
@@ -185,7 +185,7 @@ export function openFile(absolutePath: string): PromiseLike<string> {
     });
 }
 
-export function guardNoSelection<T>(selection?: T): PromiseLike<T> {
+export function guardNoSelection<T>(selection?: T): Thenable<T> {
   if (!selection) return Promise.reject('No selection');
   return Promise.resolve(selection);
 }
@@ -229,9 +229,9 @@ export function workspaceRoots(): WorkspaceRoot[] {
   }
 }
 
-function optionsForRoot(root: WorkspaceRoot): PromiseLike<DirectoryOption[]> {
+function optionsForRoot(root: WorkspaceRoot): Thenable<DirectoryOption[]> {
   return directories(root.rootPath)
-    .map(((dir): DirectoryOption => {
+    .map(((dir: FSLocation): DirectoryOption => {
       const displayText = root.multi ?
         path.join(path.sep, root.baseName, dir.relative) :
         dir.relative;
@@ -295,7 +295,7 @@ export function activate(context: vscode.ExtensionContext) {
         const cache = new Cache(context, `workspace:${cacheName}`);
 
         const choices = Promise.map(roots, optionsForRoot)
-          .reduce(flatten, [])
+          .reduce<DirectoryOption[], DirectoryOption[]>(flatten, [])
           .then(toQuickPickItems)
           .then(prependRootChoices(roots))
           .then(prependCurrentEditorPathChoice(roots))
