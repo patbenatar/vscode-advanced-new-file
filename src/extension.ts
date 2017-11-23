@@ -10,19 +10,19 @@ import * as Cache from 'vscode-cache';
 import * as Promise from 'bluebird';
 import { QuickPickItem } from 'vscode';
 
-interface FSLocation {
+export interface FSLocation {
   relative: string;
   absolute: string;
 }
 
-interface WorkspaceRoot {
+export interface WorkspaceRoot {
   rootPath: string;
   baseName: string;
   multi: boolean;
   vsCodeFolder?: vscode.WorkspaceFolder;
 }
 
-interface DirectoryOption {
+export interface DirectoryOption {
   displayText: string;
   fsLocation: FSLocation;
 }
@@ -144,7 +144,7 @@ export function prependChoice(
   description: string): vscode.QuickPickItem[] {
 
   if (option) {
-    const choice = {
+    const choice: QuickPickItem = {
       label: option.displayText,
       description,
       option
@@ -309,40 +309,42 @@ export function prependCurrentEditorPathChoice(roots: WorkspaceRoot[]) {
   };
 }
 
+export function command() {
+  const roots = workspaceRoots();
+
+  if (roots.length > 0) {
+    const cacheName = roots.map(r => r.rootPath).join(';');
+    const cache = new Cache(context, `workspace:${cacheName}`);
+
+    const choices = Promise.map(roots, optionsForRoot)
+      .reduce<DirectoryOption[], DirectoryOption[]>(flatten, [])
+      .then(toQuickPickItems)
+      .then(prependRootChoices(roots))
+      .then(prependCurrentEditorPathChoice(roots))
+      .then(
+        (c) => prependChoice(c, lastSelection(cache), '- last selection')
+      );
+
+    return showQuickPick(choices)
+      .then(guardNoSelection)
+      .then(unwrapSelection)
+      .then(cacheSelection(cache))
+      .then(showInputBox)
+      .then(guardNoSelection)
+      .then(createFileOrFolder)
+      .then(openFile)
+      .then(noop, noop); // Silently handle rejections for now
+  } else {
+    return vscode.window.showErrorMessage(
+      'It doesn\'t look like you have a folder opened in your workspace. ' +
+      'Try opening a folder first.'
+    );
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   let disposable =
-    vscode.commands.registerCommand('extension.advancedNewFile', () => {
-      const roots = workspaceRoots();
-
-      if (roots.length >= 0) {
-        const cacheName = roots.map(r => r.rootPath).join(';');
-        const cache = new Cache(context, `workspace:${cacheName}`);
-
-        const choices = Promise.map(roots, optionsForRoot)
-          .reduce<DirectoryOption[], DirectoryOption[]>(flatten, [])
-          .then(toQuickPickItems)
-          .then(prependRootChoices(roots))
-          .then(prependCurrentEditorPathChoice(roots))
-          .then(
-            (c) => prependChoice(c, lastSelection(cache), '- last selection')
-          );
-
-        return showQuickPick(choices)
-          .then(guardNoSelection)
-          .then(unwrapSelection)
-          .then(cacheSelection(cache))
-          .then(showInputBox)
-          .then(guardNoSelection)
-          .then(createFileOrFolder)
-          .then(openFile)
-          .then(noop, noop); // Silently handle rejections for now
-      } else {
-        return vscode.window.showErrorMessage(
-          'It doesn\'t look like you have a folder opened in your workspace. ' +
-          'Try opening a folder first.'
-        );
-      }
-    });
+    vscode.commands.registerCommand('extension.advancedNewFile', command);
 
   context.subscriptions.push(disposable);
 }
