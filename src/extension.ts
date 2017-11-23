@@ -3,11 +3,10 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
-import { curry, noop } from 'lodash';
+import { compact } from 'lodash';
 import * as gitignoreToGlob from 'gitignore-to-glob';
 import { sync as globSync } from 'glob';
 import * as Cache from 'vscode-cache';
-import * as Promise from 'bluebird';
 import { QuickPickItem } from 'vscode';
 
 export interface FSLocation {
@@ -33,15 +32,15 @@ declare module 'vscode' {
   }
 }
 
-function isFolderDescriptor(filepath) {
+function isFolderDescriptor(filepath: string): boolean {
   return filepath.charAt(filepath.length - 1) === path.sep;
 }
 
-function invertGlob(pattern) {
+function invertGlob(pattern: string): string {
   return pattern.replace(/^!/, '');
 }
 
-function walkupGitignores(dir, found = []) {
+function walkupGitignores(dir: string, found: string[] = []): string[] {
   const gitignore = path.join(dir, '.gitignore');
   if (fs.existsSync(gitignore)) found.push(gitignore);
 
@@ -55,13 +54,13 @@ function walkupGitignores(dir, found = []) {
   }
 }
 
-function flatten(memo, item) {
+function flatten(memo: any[], item: any): any[] {
   return memo.concat(item);
 }
 
 function gitignoreGlobs(root: string): string[] {
   const gitignoreFiles = walkupGitignores(root);
-  return gitignoreFiles.map(gitignoreToGlob).reduce(flatten, []);
+  return gitignoreFiles.map(g => gitignoreToGlob(g)).reduce(flatten, []);
 }
 
 function configIgnoredGlobs(root: string): string[] {
@@ -93,22 +92,28 @@ function directoriesSync(root: string): FSLocation[] {
   return results;
 }
 
-export function showQuickPick(choices: Promise<vscode.QuickPickItem[]>) {
+export function showQuickPick(
+  choices: Promise<vscode.QuickPickItem[]>): Thenable<QuickPickItem> {
+
   return vscode.window.showQuickPick<vscode.QuickPickItem>(choices, {
     placeHolder: 'First, select an existing path to create relative to ' +
     '(larger projects may take a moment to load)'
   });
 }
 
-export function showInputBox(baseDirectory: DirectoryOption): Thenable<string> {
-  const resolverArgsCount = 2;
-  const resolveAbsolutePath =
-    curry(path.join, resolverArgsCount)(baseDirectory.fsLocation.absolute);
+export async function showInputBox(
+  baseDirectory: DirectoryOption): Promise<string> {
 
-  return vscode.window.showInputBox({
-    prompt: `Relative to ${baseDirectory.displayText}`,
-    placeHolder: 'Filename or relative path to file'
-  }).then(resolveAbsolutePath);
+  try {
+    const input = await vscode.window.showInputBox({
+      prompt: `Relative to ${baseDirectory.displayText}`,
+      placeHolder: 'Filename or relative path to file'
+    });
+
+    return path.join(baseDirectory.fsLocation.absolute, input);
+  } catch {
+    return;
+  }
 }
 
 export function directories(root: string): Promise<FSLocation[]> {
@@ -126,34 +131,17 @@ export function directories(root: string): Promise<FSLocation[]> {
   });
 }
 
-export function toQuickPickItems(
-  options: DirectoryOption[]): vscode.QuickPickItem[] {
-
-  return options.map((option) => {
-    return {
-      label: option.displayText,
-      description: null,
-      option
-    };
-  });
-}
-
-export function prependChoice(
-  choices: vscode.QuickPickItem[],
+export function buildQuickPickItem(
   option: DirectoryOption,
-  description: string): vscode.QuickPickItem[] {
+  description: string = null): vscode.QuickPickItem {
 
-  if (option) {
-    const choice: QuickPickItem = {
-      label: option.displayText,
-      description,
-      option
-    };
+  if (!option) return;
 
-    choices.unshift(choice);
-  }
-
-  return choices;
+  return {
+    label: option.displayText,
+    description,
+    option
+  };
 }
 
 export function currentEditorPath(): string {
@@ -163,7 +151,7 @@ export function currentEditorPath(): string {
   return path.dirname(activeEditor.document.fileName);
 }
 
-export function createFileOrFolder(absolutePath: string): string {
+export function createFileOrFolder(absolutePath: string): void {
   let directoryToFile = path.dirname(absolutePath);
 
   if (!fs.existsSync(absolutePath)) {
@@ -174,11 +162,9 @@ export function createFileOrFolder(absolutePath: string): string {
       fs.appendFileSync(absolutePath, '');
     }
   }
-
-  return absolutePath;
 }
 
-export function openFile(absolutePath: string): Thenable<string> {
+export async function openFile(absolutePath: string): Promise<void> {
   if (isFolderDescriptor(absolutePath)) {
     const showInformationMessages = vscode.workspace
       .getConfiguration('advancedNewFile').get('showInformationMessages', true);
@@ -186,43 +172,18 @@ export function openFile(absolutePath: string): Thenable<string> {
     if (showInformationMessages) {
       vscode.window.showInformationMessage(`Folder created: ${absolutePath}`);
     }
-    return Promise.resolve(absolutePath);
+  } else {
+    const textDocument = await vscode.workspace.openTextDocument(absolutePath)
+
+    if (textDocument) {
+      vscode.window.showTextDocument(textDocument);
+    }
   }
-
-  return vscode.workspace.openTextDocument(absolutePath)
-    .then((textDocument): Thenable<string> => {
-      if (textDocument) {
-        vscode.window.showTextDocument(textDocument);
-        return Promise.resolve(absolutePath);
-      } else {
-        return Promise.reject('Could not open document');
-      }
-    });
-}
-
-export function guardNoSelection<T>(selection?: T): Thenable<T> {
-  if (!selection) return Promise.reject('No selection');
-  return Promise.resolve(selection);
-}
-
-export function cacheSelection(cache: Cache):
-  (selection: DirectoryOption) => DirectoryOption {
-
-  return (selection) => {
-    cache.put('last', selection);
-    return selection;
-  };
 }
 
 export function lastSelection(cache: Cache): DirectoryOption {
   if (!cache.has('last')) return;
   return cache.get('last') as DirectoryOption;
-}
-
-export function unwrapSelection(
-  selection: vscode.QuickPickItem): DirectoryOption {
-
-  return selection.option;
 }
 
 export function workspaceRoots(): WorkspaceRoot[] {
@@ -248,94 +209,105 @@ export function workspaceRoots(): WorkspaceRoot[] {
   }
 }
 
-function optionsForRoot(root: WorkspaceRoot): Thenable<DirectoryOption[]> {
-  return directories(root.rootPath)
-    .map(((dir: FSLocation): DirectoryOption => {
-      const displayText = root.multi ?
-        path.join(path.sep, root.baseName, dir.relative) :
-        dir.relative;
+async function subdirOptionsForRoot(root: WorkspaceRoot): Promise<DirectoryOption[]> {
+  const dirs = await directories(root.rootPath)
 
-      return {
-        displayText,
-        fsLocation: dir
-      };
-  }));
-}
+  return dirs.map((dir: FSLocation): DirectoryOption => {
+    const displayText = root.multi ?
+      path.join(path.sep, root.baseName, dir.relative) :
+      dir.relative;
 
-export function prependRootChoices(roots: WorkspaceRoot[]) {
-  return (choices: vscode.QuickPickItem[]): vscode.QuickPickItem[] => {
-    roots.forEach((root) => {
-      const option: DirectoryOption = {
-        displayText: root.multi ? path.join(path.sep, root.baseName) : path.sep,
-        fsLocation: {
-          relative: path.sep,
-          absolute: root.rootPath
-        }
-      };
-
-      prependChoice(choices, option, '- workspace root');
-    });
-
-    return choices;
-  };
-}
-
-export function prependCurrentEditorPathChoice(roots: WorkspaceRoot[]) {
-  return (choices: vscode.QuickPickItem[]): vscode.QuickPickItem[] => {
-    const currentFilePath = currentEditorPath();
-    const currentFileRoot = currentFilePath &&
-      roots.find(r => currentFilePath.indexOf(r.rootPath) === 0);
-
-    if (currentFileRoot) {
-      const rootMatcher = new RegExp(`^${currentFileRoot.rootPath}`);
-      const relativeCurrentFilePath = currentFilePath.replace(rootMatcher, '');
-
-      const displayText = currentFileRoot.multi ?
-        path.join(path.sep, currentFileRoot.baseName, relativeCurrentFilePath) :
-        relativeCurrentFilePath;
-
-      const option: DirectoryOption = {
-        displayText,
-        fsLocation: {
-          relative: relativeCurrentFilePath,
-          absolute: currentFilePath
-        }
-      };
-
-      prependChoice(choices, option, '- current file');
+    return {
+      displayText,
+      fsLocation: dir
     }
+  });
+}
 
-    return choices;
+export function rootOptions(roots: WorkspaceRoot[]): DirectoryOption[] {
+  return roots.map((root): DirectoryOption => {
+    return {
+      displayText: root.multi ? path.join(path.sep, root.baseName) : path.sep,
+      fsLocation: {
+        relative: path.sep,
+        absolute: root.rootPath
+      }
+    };
+  });
+}
+
+export function currentEditorPathOption(roots: WorkspaceRoot[]): DirectoryOption {
+  const currentFilePath = currentEditorPath();
+  const currentFileRoot = currentFilePath &&
+    roots.find(r => currentFilePath.indexOf(r.rootPath) === 0);
+
+  if (!currentFileRoot) return
+
+  const rootMatcher = new RegExp(`^${currentFileRoot.rootPath}`);
+  const relativeCurrentFilePath = currentFilePath.replace(rootMatcher, '');
+
+  const displayText = currentFileRoot.multi ?
+    path.join(path.sep, currentFileRoot.baseName, relativeCurrentFilePath) :
+    relativeCurrentFilePath;
+
+  return {
+    displayText,
+    fsLocation: {
+      relative: relativeCurrentFilePath,
+      absolute: currentFilePath
+    }
   };
 }
 
-export function command() {
+export async function dirQuickPickItems(
+  roots: WorkspaceRoot[],
+  cache: Cache): Promise<vscode.QuickPickItem[]> {
+
+  const dirOptions = await Promise.all(
+    roots.map(async r => await subdirOptionsForRoot(r))
+  );
+  let quickPickItems = dirOptions.reduce(flatten).map(o => buildQuickPickItem(o))
+
+  const convenienceOptions: vscode.QuickPickItem[] = [
+    buildQuickPickItem(lastSelection(cache), '- last selection'),
+    buildQuickPickItem(currentEditorPathOption(roots), '- current file'),
+    ...rootOptions(roots).map(o => buildQuickPickItem(o, '- workspace root'))
+  ]
+
+  quickPickItems.unshift(...compact(convenienceOptions))
+
+  return quickPickItems;
+}
+
+export async function command(context: vscode.ExtensionContext) {
   const roots = workspaceRoots();
 
   if (roots.length > 0) {
     const cacheName = roots.map(r => r.rootPath).join(';');
     const cache = new Cache(context, `workspace:${cacheName}`);
 
-    const choices = Promise.map(roots, optionsForRoot)
-      .reduce<DirectoryOption[], DirectoryOption[]>(flatten, [])
-      .then(toQuickPickItems)
-      .then(prependRootChoices(roots))
-      .then(prependCurrentEditorPathChoice(roots))
-      .then(
-        (c) => prependChoice(c, lastSelection(cache), '- last selection')
-      );
+    // TODO: determine min vs code version that supports async/await and
+    // pin to that in package.json, note in changelog.
+    // Maybe: https://github.com/Microsoft/vscode/issues/23159
+    // Node 7.6
+    // Electron: 1.7.x (July 17, 2017)
+    //  - https://github.com/electron/electron/commit/0330a30fdb405d99cddaf2b0529f9ea02086d949#diff-bcf7bcf05ac59e51b9adfd7394c810c4
+    //  - https://discuss.atom.io/t/node-7-6-in-electron/43558
+    //  - 1.7.5 https://electronjs.org/releases#1.7.5
 
-    return showQuickPick(choices)
-      .then(guardNoSelection)
-      .then(unwrapSelection)
-      .then(cacheSelection(cache))
-      .then(showInputBox)
-      .then(guardNoSelection)
-      .then(createFileOrFolder)
-      .then(openFile)
-      .then(noop, noop); // Silently handle rejections for now
+    const dirSelection = await showQuickPick(dirQuickPickItems(roots, cache));
+    if (!dirSelection) return;
+    const dir = dirSelection.option;
+
+    cache.put('last', dir);
+
+    const newFileInput = await showInputBox(dir);
+    if (!newFileInput) return;
+
+    createFileOrFolder(newFileInput);
+    await openFile(newFileInput);
   } else {
-    return vscode.window.showErrorMessage(
+    await vscode.window.showErrorMessage(
       'It doesn\'t look like you have a folder opened in your workspace. ' +
       'Try opening a folder first.'
     );
@@ -343,8 +315,10 @@ export function command() {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  let disposable =
-    vscode.commands.registerCommand('extension.advancedNewFile', command);
+  let disposable = vscode.commands.registerCommand(
+    'extension.advancedNewFile',
+    () => command(context)
+  );
 
   context.subscriptions.push(disposable);
 }
