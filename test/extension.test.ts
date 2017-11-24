@@ -404,11 +404,19 @@ describe('Advanced New File', () => {
     });
 
     it('returns the cached last selection', () => {
+      const lastSelection: AdvancedNewFile.DirectoryOption = {
+        displayText: 'foo',
+        fsLocation: {
+          absolute: '/',
+          relative: '/'
+        }
+      }
       const cache = {
         has: () => true,
-        get: () => '/cached/value'
+        get: () => lastSelection
       }
-      expect(AdvancedNewFile.lastSelection(cache)).to.eq('/cached/value');
+
+      expect(AdvancedNewFile.lastSelection(cache)).to.eq(lastSelection);
     });
   });
 
