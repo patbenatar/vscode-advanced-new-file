@@ -182,7 +182,7 @@ export async function openFile(absolutePath: string): Promise<void> {
 
 export function lastSelection(cache: Cache): DirectoryOption {
   if (!cache.has('last')) return;
-  const value = cache.get('last')
+  const value = cache.get('last');
 
   if (typeof value === 'object') {
     return value as DirectoryOption;
