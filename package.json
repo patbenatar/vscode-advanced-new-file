@@ -52,6 +52,11 @@
           "type": "boolean",
           "default": true,
           "description": "Control whether top-bar notifications display"
+        },
+        "advancedNewFile.convenienceOptions": {
+          "type": "array",
+          "default": ["last", "current", "root"],
+          "description": "Convenience options display at the top of the list. Control which ones you see and in what order."
         }
       }
     }

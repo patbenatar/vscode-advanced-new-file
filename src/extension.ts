@@ -271,6 +271,27 @@ export function currentEditorPathOption(
   };
 }
 
+function convenienceOptions(
+  roots: WorkspaceRoot[],
+  cache: Cache): vscode.QuickPickItem[] {
+
+  const config: string[] = vscode.workspace
+    .getConfiguration('advancedNewFile').get('convenienceOptions');
+
+  const optionsByName = {
+    last: [buildQuickPickItem(lastSelection(cache), '- last selection')],
+    current: [
+      buildQuickPickItem(currentEditorPathOption(roots), '- current file')
+    ],
+    root: rootOptions(roots).map(o => buildQuickPickItem(o, '- workspace root'))
+  };
+
+  const options = config
+    .map<vscode.QuickPickItem[]>(c => optionsByName[c]).reduce(flatten);
+
+  return compact<vscode.QuickPickItem>(options);
+}
+
 export async function dirQuickPickItems(
   roots: WorkspaceRoot[],
   cache: Cache): Promise<vscode.QuickPickItem[]> {
@@ -281,13 +302,7 @@ export async function dirQuickPickItems(
   let quickPickItems =
     dirOptions.reduce(flatten).map(o => buildQuickPickItem(o));
 
-  const convenienceOptions: vscode.QuickPickItem[] = [
-    buildQuickPickItem(lastSelection(cache), '- last selection'),
-    buildQuickPickItem(currentEditorPathOption(roots), '- current file'),
-    ...rootOptions(roots).map(o => buildQuickPickItem(o, '- workspace root'))
-  ];
-
-  quickPickItems.unshift(...compact(convenienceOptions));
+  quickPickItems.unshift(...convenienceOptions(roots, cache));
 
   return quickPickItems;
 }
