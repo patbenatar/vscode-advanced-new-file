@@ -18,7 +18,6 @@ export interface WorkspaceRoot {
   rootPath: string;
   baseName: string;
   multi: boolean;
-  vsCodeFolder?: vscode.WorkspaceFolder;
 }
 
 export interface DirectoryOption {
@@ -173,7 +172,7 @@ export async function openFile(absolutePath: string): Promise<void> {
       vscode.window.showInformationMessage(`Folder created: ${absolutePath}`);
     }
   } else {
-    const textDocument = await vscode.workspace.openTextDocument(absolutePath)
+    const textDocument = await vscode.workspace.openTextDocument(absolutePath);
 
     if (textDocument) {
       vscode.window.showTextDocument(textDocument);
@@ -194,8 +193,7 @@ export function workspaceRoots(): WorkspaceRoot[] {
       return {
         rootPath: folder.uri.fsPath,
         baseName: path.basename(folder.uri.fsPath),
-        multi,
-        vsCodeFolder: folder
+        multi
       };
     });
   } else if (vscode.workspace.rootPath) {
@@ -209,8 +207,10 @@ export function workspaceRoots(): WorkspaceRoot[] {
   }
 }
 
-async function subdirOptionsForRoot(root: WorkspaceRoot): Promise<DirectoryOption[]> {
-  const dirs = await directories(root.rootPath)
+async function subdirOptionsForRoot(
+  root: WorkspaceRoot): Promise<DirectoryOption[]> {
+
+  const dirs = await directories(root.rootPath);
 
   return dirs.map((dir: FSLocation): DirectoryOption => {
     const displayText = root.multi ?
@@ -220,7 +220,7 @@ async function subdirOptionsForRoot(root: WorkspaceRoot): Promise<DirectoryOptio
     return {
       displayText,
       fsLocation: dir
-    }
+    };
   });
 }
 
@@ -236,12 +236,14 @@ export function rootOptions(roots: WorkspaceRoot[]): DirectoryOption[] {
   });
 }
 
-export function currentEditorPathOption(roots: WorkspaceRoot[]): DirectoryOption {
+export function currentEditorPathOption(
+  roots: WorkspaceRoot[]): DirectoryOption {
+
   const currentFilePath = currentEditorPath();
   const currentFileRoot = currentFilePath &&
     roots.find(r => currentFilePath.indexOf(r.rootPath) === 0);
 
-  if (!currentFileRoot) return
+  if (!currentFileRoot) return;
 
   const rootMatcher = new RegExp(`^${currentFileRoot.rootPath}`);
   const relativeCurrentFilePath = currentFilePath.replace(rootMatcher, '');
@@ -266,15 +268,16 @@ export async function dirQuickPickItems(
   const dirOptions = await Promise.all(
     roots.map(async r => await subdirOptionsForRoot(r))
   );
-  let quickPickItems = dirOptions.reduce(flatten).map(o => buildQuickPickItem(o))
+  let quickPickItems =
+    dirOptions.reduce(flatten).map(o => buildQuickPickItem(o));
 
   const convenienceOptions: vscode.QuickPickItem[] = [
     buildQuickPickItem(lastSelection(cache), '- last selection'),
     buildQuickPickItem(currentEditorPathOption(roots), '- current file'),
     ...rootOptions(roots).map(o => buildQuickPickItem(o, '- workspace root'))
-  ]
+  ];
 
-  quickPickItems.unshift(...compact(convenienceOptions))
+  quickPickItems.unshift(...compact(convenienceOptions));
 
   return quickPickItems;
 }
@@ -285,15 +288,6 @@ export async function command(context: vscode.ExtensionContext) {
   if (roots.length > 0) {
     const cacheName = roots.map(r => r.rootPath).join(';');
     const cache = new Cache(context, `workspace:${cacheName}`);
-
-    // TODO: determine min vs code version that supports async/await and
-    // pin to that in package.json, note in changelog.
-    // Maybe: https://github.com/Microsoft/vscode/issues/23159
-    // Node 7.6
-    // Electron: 1.7.x (July 17, 2017)
-    //  - https://github.com/electron/electron/commit/0330a30fdb405d99cddaf2b0529f9ea02086d949#diff-bcf7bcf05ac59e51b9adfd7394c810c4
-    //  - https://discuss.atom.io/t/node-7-6-in-electron/43558
-    //  - 1.7.5 https://electronjs.org/releases#1.7.5
 
     const dirSelection = await showQuickPick(dirQuickPickItems(roots, cache));
     if (!dirSelection) return;
