@@ -65,7 +65,6 @@
     "lint": "tslint src/**"
   },
   "devDependencies": {
-    "@types/bluebird": "^3.5.18",
     "@types/chai": "^3.4.34",
     "@types/chai-as-promised": "0.0.29",
     "@types/chai-spies": "0.0.0",
@@ -88,7 +87,6 @@
     "vscode": "^1.0.0"
   },
   "dependencies": {
-    "bluebird": "^3.5.1",
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
     "glob": "^7.1.1",
     "lodash": "^4.17.2",
