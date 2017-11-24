@@ -182,7 +182,14 @@ export async function openFile(absolutePath: string): Promise<void> {
 
 export function lastSelection(cache: Cache): DirectoryOption {
   if (!cache.has('last')) return;
-  return cache.get('last') as DirectoryOption;
+  const value = cache.get('last')
+
+  if (typeof value === 'object') {
+    return value as DirectoryOption;
+  } else {
+    cache.forget('last');
+    return;
+  }
 }
 
 export function workspaceRoots(): WorkspaceRoot[] {
@@ -246,7 +253,10 @@ export function currentEditorPathOption(
   if (!currentFileRoot) return;
 
   const rootMatcher = new RegExp(`^${currentFileRoot.rootPath}`);
-  const relativeCurrentFilePath = currentFilePath.replace(rootMatcher, '');
+  let relativeCurrentFilePath = currentFilePath.replace(rootMatcher, '');
+
+  relativeCurrentFilePath =
+    relativeCurrentFilePath === '' ? path.sep : relativeCurrentFilePath;
 
   const displayText = currentFileRoot.multi ?
     path.join(path.sep, currentFileRoot.baseName, relativeCurrentFilePath) :
