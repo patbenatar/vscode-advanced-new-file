@@ -2,7 +2,6 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as spies from 'chai-spies';
 import * as vscode from 'vscode';
-// import * as advancedNewFile from '../src/extension';
 import * as AdvancedNewFile from '../src/extension';
 import * as proxyquire from 'proxyquire';
 import * as path from 'path';
@@ -50,8 +49,8 @@ describe('Advanced New File', () => {
       let result = await AdvancedNewFile.directories(dummyProjectRoot);
       let relativePaths = result.map(r => r.relative);
 
-      expect(relativePaths).to.include('/folder');
-      expect(relativePaths).not.to.include('/folder/file');
+      expect(relativePaths).to.include(`${path.sep}folder`);
+      expect(relativePaths).not.to.include(`${path.sep}folder${path.sep}file`);
     });
 
     context('with a gitignore file', () => {
@@ -65,14 +64,14 @@ describe('Advanced New File', () => {
         let result = await AdvancedNewFile.directories(dummyProjectRoot);
         let relativePaths = result.map(r => r.relative);
 
-        expect(relativePaths).not.to.include('/ignored');
+        expect(relativePaths).not.to.include(`${path.sep}ignored`);
       });
 
       it('does not include nested gitignored directories', async () => {
         let result = await AdvancedNewFile.directories(dummyProjectRoot);
         let relativePaths = result.map(r => r.relative);
 
-        expect(relativePaths).not.to.include('/folder/nested-ignored');
+        expect(relativePaths).not.to.include(`${path.sep}folder${path.sep}nested-ignored`);
       });
     });
 
@@ -96,8 +95,8 @@ describe('Advanced New File', () => {
         let result = await AdvancedNewFile.directories(testProjectRoot);
         let relativePaths = result.map(r => r.relative);
 
-        expect(relativePaths).not.to.include('/nested-ignored');
-        expect(relativePaths).not.to.include('/nested');
+        expect(relativePaths).not.to.include(`${path.sep}nested-ignored`);
+        expect(relativePaths).not.to.include(`${path.sep}nested`);
       });
     });
 
@@ -126,14 +125,14 @@ describe('Advanced New File', () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
         let relativePaths = result.map(r => r.relative);
 
-        expect(relativePaths).not.to.include('/ignored');
+        expect(relativePaths).not.to.include(`${path.sep}ignored`);
       });
 
       it('includes directories with a false value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
         let relativePaths = result.map(r => r.relative);
 
-        expect(relativePaths).to.include('/folder');
+        expect(relativePaths).to.include(`${path.sep}folder`);
       });
     });
 
@@ -164,14 +163,14 @@ describe('Advanced New File', () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
         let relativePaths = result.map(r => r.relative);
 
-        expect(relativePaths).not.to.include('/ignored');
+        expect(relativePaths).not.to.include(`${path.sep}ignored`);
       });
 
       it('includes directories with a false value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
         let relativePaths = result.map(r => r.relative);
 
-        expect(relativePaths).to.include('/folder');
+        expect(relativePaths).to.include(`${path.sep}folder`);
       });
     });
   });

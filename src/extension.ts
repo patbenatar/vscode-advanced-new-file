@@ -110,7 +110,7 @@ export async function showInputBox(
     });
 
     return path.join(baseDirectory.fsLocation.absolute, input);
-  } catch {
+  } catch (e) {
     return;
   }
 }
