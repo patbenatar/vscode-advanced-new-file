@@ -1,3 +1,12 @@
+# 1.0.0
+
+## What's New
+* Support for multi-root workspaces
+
+## Misc
+* Dropped support for VS Code versions < 1.16.0 (August 2017) so we can use
+  Node 7.6+, enabling a large refactor to use async/await
+
 # 0.5.1
 
 ## What's New

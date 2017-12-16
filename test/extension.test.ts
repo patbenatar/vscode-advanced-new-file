@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as spies from 'chai-spies';
 import * as vscode from 'vscode';
-import * as advancedNewFile from '../src/extension';
+import * as AdvancedNewFile from '../src/extension';
 import * as proxyquire from 'proxyquire';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -13,32 +13,9 @@ chai.use(spies);
 const expect = chai.expect;
 
 describe('Advanced New File', () => {
-  describe('guardNoSelection', () => {
-    context('selection is null', () => {
-      it('rejects the promise', () => {
-        expect(advancedNewFile.guardNoSelection(null))
-          .to.be.rejectedWith('No selection');
-      });
-    });
-
-    context('selection is undefined', () => {
-      it('rejects the promise', () => {
-        expect(advancedNewFile.guardNoSelection())
-          .to.be.rejectedWith('No selection');
-      });
-    });
-
-    context('selection is a string', () => {
-      it('resolves the promise with given value', () => {
-        expect(advancedNewFile.guardNoSelection('Foo bar'))
-          .to.eventually.equal('Foo bar');
-      });
-    });
-  });
-
   describe('showInputBox', () => {
-    it('resolves with the path to input from workspace root', () => {
-      const advancedNewFile = proxyquire('../src/extension', {
+    it('resolves with the path to input from workspace root', async () => {
+      const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
         vscode: {
           window: {
             showInputBox: () => {
@@ -51,8 +28,17 @@ describe('Advanced New File', () => {
       const expectedPath =
         path.join('/', 'base', 'dir', 'input', 'path', 'to', 'file.rb');
 
-      return expect(advancedNewFile.showInputBox('/base/dir'))
-        .to.eventually.equal(expectedPath);
+      const directory: AdvancedNewFile.DirectoryOption = {
+        displayText: 'foo',
+        fsLocation: {
+          absolute: '/base/dir',
+          relative: '/'
+        }
+      }
+
+      const result = await advancedNewFile.showInputBox(directory)
+
+      expect(result).to.eq(expectedPath);
     });
   });
 
@@ -60,10 +46,11 @@ describe('Advanced New File', () => {
     const dummyProjectRoot = path.join(__dirname, 'dummy_project');
 
     it('only returns directories, prepended with /', async () => {
-      let result = await advancedNewFile.directories(dummyProjectRoot);
+      let result = await AdvancedNewFile.directories(dummyProjectRoot);
+      let relativePaths = result.map(r => r.relative);
 
-      expect(result).to.include('/folder');
-      expect(result).not.to.include('/folder/file');
+      expect(relativePaths).to.include(`${path.sep}folder`);
+      expect(relativePaths).not.to.include(`${path.sep}folder${path.sep}file`);
     });
 
     context('with a gitignore file', () => {
@@ -74,13 +61,17 @@ describe('Advanced New File', () => {
       after(() => fs.unlinkSync(gitignoreFile));
 
       it('does not include gitignored directories', async () => {
-        let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).not.to.include('/ignored');
+        let result = await AdvancedNewFile.directories(dummyProjectRoot);
+        let relativePaths = result.map(r => r.relative);
+
+        expect(relativePaths).not.to.include(`${path.sep}ignored`);
       });
 
       it('does not include nested gitignored directories', async () => {
-        let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).not.to.include('/folder/nested-ignored');
+        let result = await AdvancedNewFile.directories(dummyProjectRoot);
+        let relativePaths = result.map(r => r.relative);
+
+        expect(relativePaths).not.to.include(`${path.sep}folder${path.sep}nested-ignored`);
       });
     });
 
@@ -101,15 +92,16 @@ describe('Advanced New File', () => {
       });
 
       it('ignores as specified in both gitignore files', async () => {
-        let result = await advancedNewFile.directories(testProjectRoot);
+        let result = await AdvancedNewFile.directories(testProjectRoot);
+        let relativePaths = result.map(r => r.relative);
 
-        expect(result).not.to.include('/nested-ignored');
-        expect(result).not.to.include('/nested');
+        expect(relativePaths).not.to.include(`${path.sep}nested-ignored`);
+        expect(relativePaths).not.to.include(`${path.sep}nested`);
       });
     });
 
     context('with vscode setting files.exclude', () => {
-      const advancedNewFile = proxyquire('../src/extension', {
+      const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
         vscode: {
           workspace: {
             getConfiguration(name) {
@@ -131,17 +123,21 @@ describe('Advanced New File', () => {
 
       it('does not include directories with a true value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).not.to.include('/ignored');
+        let relativePaths = result.map(r => r.relative);
+
+        expect(relativePaths).not.to.include(`${path.sep}ignored`);
       });
 
       it('includes directories with a false value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).to.include('/folder');
+        let relativePaths = result.map(r => r.relative);
+
+        expect(relativePaths).to.include(`${path.sep}folder`);
       });
     });
 
     context('with vscode setting advancedNewFile.exclude', () => {
-      const advancedNewFile = proxyquire('../src/extension', {
+      const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
         vscode: {
           workspace: {
             getConfiguration(name) {
@@ -165,12 +161,16 @@ describe('Advanced New File', () => {
 
       it('does not include directories with a true value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).not.to.include('/ignored');
+        let relativePaths = result.map(r => r.relative);
+
+        expect(relativePaths).not.to.include(`${path.sep}ignored`);
       });
 
       it('includes directories with a false value', async () => {
         let result = await advancedNewFile.directories(dummyProjectRoot);
-        expect(result).to.include('/folder');
+        let relativePaths = result.map(r => r.relative);
+
+        expect(relativePaths).to.include(`${path.sep}folder`);
       });
     });
   });
@@ -186,7 +186,7 @@ describe('Advanced New File', () => {
         after(() => fs.unlinkSync(newFileDescriptor));
 
         it('creates any nonexistent dirs in path', () => {
-          advancedNewFile.createFileOrFolder(newFileDescriptor);
+          AdvancedNewFile.createFileOrFolder(newFileDescriptor);
 
           expect(fs.statSync(path.join(tmpDir, 'path')).isDirectory())
             .to.be.true;
@@ -209,15 +209,10 @@ describe('Advanced New File', () => {
         after(() => fs.unlinkSync(existingFileDescriptor));
 
         it('does not overwrite the file', () => {
-          advancedNewFile.createFileOrFolder(existingFileDescriptor);
+          AdvancedNewFile.createFileOrFolder(existingFileDescriptor);
 
           expect(fs.readFileSync(existingFileDescriptor, { encoding: 'utf8' }))
             .to.eq('existing content');
-        });
-
-        it('returns the path to file', () => {
-          expect(advancedNewFile.createFileOrFolder(existingFileDescriptor))
-            .to.eq(existingFileDescriptor);
         });
       });
     });
@@ -230,7 +225,7 @@ describe('Advanced New File', () => {
         after(() => fs.rmdirSync(newFolderDescriptor));
 
         it('creates any nonexistent dirs in path', () => {
-          advancedNewFile.createFileOrFolder(newFolderDescriptor);
+          AdvancedNewFile.createFileOrFolder(newFolderDescriptor);
 
           expect(fs.statSync(path.join(tmpDir, 'path')).isDirectory())
             .to.be.true;
@@ -263,17 +258,12 @@ describe('Advanced New File', () => {
         });
 
         it('does not delete folder content', () => {
-          advancedNewFile.createFileOrFolder(newFolderDescriptor);
+          AdvancedNewFile.createFileOrFolder(newFolderDescriptor);
 
           expect(
             fs.readFileSync(existingFileDescriptor, { encoding: 'utf8' })
           )
             .to.eq('existing content');
-        });
-
-        it('returns the path to folder', () => {
-          expect(advancedNewFile.createFileOrFolder(newFolderDescriptor))
-            .to.eq(newFolderDescriptor);
         });
       });
     });
@@ -298,7 +288,7 @@ describe('Advanced New File', () => {
       const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
       const showTextDocument = chai.spy();
 
-      const advancedNewFile = proxyquire('../src/extension', {
+      const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
         vscode: {
           workspace: {
             openTextDocument,
@@ -319,7 +309,7 @@ describe('Advanced New File', () => {
         const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
         const showTextDocument = chai.spy();
 
-        const advancedNewFile = proxyquire('../src/extension', {
+        const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
           vscode: {
             workspace: {
               openTextDocument,
@@ -333,46 +323,6 @@ describe('Advanced New File', () => {
           expect(showTextDocument).to.have.been.called.with(textDocument);
         });
       });
-
-      it('resolves with the opened file path', () => {
-        const textDocument = 'mock document';
-        const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
-        const showTextDocument = chai.spy();
-
-        const advancedNewFile = proxyquire('../src/extension', {
-          vscode: {
-            workspace: {
-              openTextDocument,
-              getConfiguration: mockGetConfiguration()
-            },
-            window: { showTextDocument }
-          }
-        });
-
-        return expect(advancedNewFile.openFile('/path/to/file.ts'))
-          .to.eventually.eq('/path/to/file.ts');
-      });
-    });
-
-    context('file fails to open', () => {
-      it('rejects with an error message', () => {
-        const textDocument = 'mock document';
-        const openTextDocument = chai.spy(() => Promise.resolve(null));
-        const showTextDocument = chai.spy();
-
-        const advancedNewFile = proxyquire('../src/extension', {
-          vscode: {
-            workspace: {
-              openTextDocument,
-              getConfiguration: mockGetConfiguration()
-            },
-            window: { showTextDocument }
-          }
-        });
-
-        return expect(advancedNewFile.openFile('/path/to/file.ts'))
-          .to.eventually.be.rejectedWith('Could not open document');
-      });
     });
 
     context('file is a folder', () => {
@@ -380,7 +330,7 @@ describe('Advanced New File', () => {
         const openTextDocument = chai.spy();
         const showInformationMessage = chai.spy();
 
-        const advancedNewFile = proxyquire('../src/extension', {
+        const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
           vscode: {
             workspace: {
               openTextDocument,
@@ -401,7 +351,7 @@ describe('Advanced New File', () => {
         const openTextDocument = chai.spy();
         const showInformationMessage = chai.spy();
 
-        const advancedNewFile = proxyquire('../src/extension', {
+        const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
           vscode: {
             workspace: {
               openTextDocument,
@@ -423,7 +373,7 @@ describe('Advanced New File', () => {
           const openTextDocument = chai.spy();
           const showInformationMessage = chai.spy();
 
-          const advancedNewFile = proxyquire('../src/extension', {
+          const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
             vscode: {
               workspace: {
                 openTextDocument,
@@ -443,67 +393,37 @@ describe('Advanced New File', () => {
     });
   });
 
-  describe('cacheSelection', () => {
-    it('returns a function that when called writes the value to cache', () => {
-      const cache = {
-        put: chai.spy()
-      }
-      const fn = advancedNewFile.cacheSelection(cache);
-      fn('/selection');
-
-      expect(cache.put).to.have.been.called.with('last', '/selection');
-    });
-
-    it('returns a function that returns the selection', () => {
-      const cache = {
-        put: () => true
-      }
-      const fn = advancedNewFile.cacheSelection(cache);
-
-      expect(fn('/selection')).to.eq('/selection');
-    });
-  });
-
   describe('lastSelection', () => {
     context('empty cache', () => {
       it('is undefined', () => {
         const cache = {
           has: () => false
         }
-        expect(advancedNewFile.lastSelection(cache)).to.be.undefined;
+        expect(AdvancedNewFile.lastSelection(cache)).to.be.undefined;
       });
     });
 
     it('returns the cached last selection', () => {
+      const lastSelection: AdvancedNewFile.DirectoryOption = {
+        displayText: 'foo',
+        fsLocation: {
+          absolute: '/',
+          relative: '/'
+        }
+      }
       const cache = {
         has: () => true,
-        get: () => '/cached/value'
-      }
-      expect(advancedNewFile.lastSelection(cache)).to.eq('/cached/value');
-    });
-  });
-
-  describe('unwrapSelection', () => {
-    context('no QuickPickItem selected', () => {
-      it('is undefined', () => {
-        expect(advancedNewFile.unwrapSelection(null)).to.be.undefined;
-      });
-    });
-
-    it('returns the label of the selected QuickPickItem', () => {
-      const item: vscode.QuickPickItem = {
-        label: '/foo/bar',
-        description: 'something'
+        get: () => lastSelection
       }
 
-      expect(advancedNewFile.unwrapSelection(item)).to.eq('/foo/bar');
+      expect(AdvancedNewFile.lastSelection(cache)).to.eq(lastSelection);
     });
   });
 
   describe('currentEditorPath', () => {
     context('no active editor', () => {
       it('is undefined', () => {
-        const advancedNewFile = proxyquire('../src/extension', {
+        const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
           vscode: {
             window: {
               activeTextEditor: undefined
@@ -515,75 +435,22 @@ describe('Advanced New File', () => {
       });
     });
 
-    it('returns the relative path to file open in active editor', () => {
+    it('returns the abssolute path to file open in active editor', () => {
       const editor = {
         document: {
           fileName: '/foo/bar/baz/bip/file.ts'
         }
       }
 
-      const advancedNewFile = proxyquire('../src/extension', {
+      const advancedNewFile = <typeof AdvancedNewFile> proxyquire('../src/extension', {
         vscode: {
           window: {
             activeTextEditor: editor
-          },
-          workspace: {
-            rootPath: '/foo/bar'
           }
         }
       });
 
-      expect(advancedNewFile.currentEditorPath()).to.eq('/baz/bip');
-    });
-
-    it('does not remove workspace root matches in the middle of the path', () => {
-      const editor = {
-        document: {
-          fileName: '/foo/bar/baz/foo/bar/bip/file.ts'
-        }
-      }
-
-      const advancedNewFile = proxyquire('../src/extension', {
-        vscode: {
-          window: {
-            activeTextEditor: editor
-          },
-          workspace: {
-            rootPath: '/foo/bar'
-          }
-        }
-      });
-
-      expect(advancedNewFile.currentEditorPath()).to.eq('/baz/foo/bar/bip');
-    });
-  });
-
-  describe('prependChoice', () => {
-    it('returns a function that when called with a list of choices, adds a ' +
-       'choice with given label and description to the set', () => {
-
-      const fn = advancedNewFile.prependChoice('label', 'description');
-      let choices: vscode.QuickPickItem[] = [{
-        label: 'existing-label',
-        description: 'existing-description'
-      }];
-
-      expect(fn(choices)).to.include({
-        label: 'label',
-        description: 'description'
-      });
-    });
-
-    context('no label given', () => {
-      it('does not add a choice', () => {
-        const fn = advancedNewFile.prependChoice(null, 'description');
-        let choices: vscode.QuickPickItem[] = [{
-          label: 'existing-label',
-          description: 'existing-description'
-        }];
-
-        expect(fn(choices)).to.eq(choices);
-      })
+      expect(advancedNewFile.currentEditorPath()).to.eq('/foo/bar/baz/bip');
     });
   });
 
@@ -593,19 +460,25 @@ describe('Advanced New File', () => {
     afterEach(() => removeDirSync(tmpDir));
 
     it('creates and opens a file at given path', () => {
-      let command;
-      const registerCommand = (name, commandFn) => command = commandFn;
-
       const textDocument = 'mock document';
       const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
       const showTextDocument = chai.spy();
       const showErrorMessage = chai.spy();
 
+      const selectedRelativeDir = '/path/to';
+      const selectedAbsoluteDir = path.join(tmpDir, '/path/to');
+      const selectedOption: AdvancedNewFile.DirectoryOption = {
+        displayText: selectedRelativeDir,
+        fsLocation: {
+          relative: selectedRelativeDir,
+          absolute: selectedAbsoluteDir
+        }
+      };
+
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
-          commands: { registerCommand },
           workspace: {
-            rootPath: tmpDir,
+            workspaceFolders: [{ uri: { fsPath: tmpDir }}],
             openTextDocument,
             getConfiguration(name) {
               switch (name) {
@@ -620,8 +493,8 @@ describe('Advanced New File', () => {
           },
           window: {
             showErrorMessage,
-            showQuickPick: () => Promise.resolve({ label: 'path/to' }),
-            showInputBox: () => Promise.resolve('input/path/to/file.rb'),
+            showQuickPick: () => Promise.resolve({ label: '/path/to', option: selectedOption }),
+            showInputBox: () => Promise.resolve('/input/path/to/file.rb'),
             showTextDocument
           }
         },
@@ -639,12 +512,10 @@ describe('Advanced New File', () => {
 
       const context = { subscriptions: [] };
 
-      advancedNewFile.activate(context);
-
       const newFileDescriptor =
-        path.join(tmpDir, 'path/to/input/path/to/file.rb');
+        path.join(selectedAbsoluteDir, '/input/path/to/file.rb');
 
-      return command().then(() => {
+      return advancedNewFile.command(context).then(() => {
         expect(openTextDocument)
           .to.have.been.called.with(newFileDescriptor);
 
@@ -666,11 +537,21 @@ describe('Advanced New File', () => {
       const showErrorMessage = chai.spy();
       const showInformationMessage = chai.spy();
 
+      const selectedRelativeDir = '/path/to';
+      const selectedAbsoluteDir = path.join(tmpDir, '/path/to');
+      const selectedOption: AdvancedNewFile.DirectoryOption = {
+        displayText: selectedRelativeDir,
+        fsLocation: {
+          relative: selectedRelativeDir,
+          absolute: selectedAbsoluteDir
+        }
+      };
+
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
           commands: { registerCommand },
           workspace: {
-            rootPath: tmpDir,
+            workspaceFolders: [{ uri: { fsPath: tmpDir }}],
             openTextDocument,
             getConfiguration(name) {
               switch (name) {
@@ -685,7 +566,7 @@ describe('Advanced New File', () => {
           },
           window: {
             showErrorMessage,
-            showQuickPick: () => Promise.resolve({ label: 'path/to' }),
+            showQuickPick: () => Promise.resolve({ label: 'path/to', option: selectedOption }),
             showInputBox: () => Promise.resolve('input/path/to/folder/'),
             showInformationMessage,
             showTextDocument
@@ -708,7 +589,7 @@ describe('Advanced New File', () => {
       advancedNewFile.activate(context);
 
       const newFolderDescriptor =
-        path.join(tmpDir, 'path/to/input/path/to/folder/');
+        path.join(selectedAbsoluteDir, 'input/path/to/folder/');
 
       return command().then(() => {
         expect(openTextDocument)
@@ -725,77 +606,6 @@ describe('Advanced New File', () => {
       });
     });
 
-    context('info messages disabled in settings', () => {
-      it('creates a folder at given path and does not show information ' +
-         'message', () => {
-        let command;
-        const registerCommand = (name, commandFn) => command = commandFn;
-
-        const textDocument = 'mock document';
-        const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
-        const showTextDocument = chai.spy();
-        const showErrorMessage = chai.spy();
-        const showInformationMessage = chai.spy();
-
-        const advancedNewFile = proxyquire('../src/extension', {
-          vscode: {
-            commands: { registerCommand },
-            workspace: {
-              rootPath: tmpDir,
-              openTextDocument,
-              getConfiguration(name) {
-                switch (name) {
-                  case 'advancedNewFile':
-                    return {
-                      get: (name, defaultValue) => false
-                    };
-                  default:
-                    return {};
-                }
-              }
-            },
-            window: {
-              showErrorMessage,
-              showQuickPick: () => Promise.resolve({ label: 'path/to' }),
-              showInputBox: () => Promise.resolve('input/path/to/folder/'),
-              showInformationMessage,
-              showTextDocument
-            }
-          },
-          fs: {
-            statSync: () => {
-              return { isDirectory: () => true };
-            }
-          },
-          'vscode-cache': class Cache {
-            get() {}
-            has() { return false }
-            put() {}
-          }
-        });
-
-        const context = { subscriptions: [] };
-
-        advancedNewFile.activate(context);
-
-        const newFolderDescriptor =
-          path.join(tmpDir, 'path/to/input/path/to/folder/');
-
-        return command().then(() => {
-          expect(openTextDocument)
-            .to.not.have.been.called.with(newFolderDescriptor);
-
-          expect(showTextDocument)
-            .to.not.have.been.called.with(textDocument);
-
-          expect(showInformationMessage).to.not.have.been.called();
-
-          expect(fs.statSync(newFolderDescriptor).isDirectory())
-            .to.be.true;
-        });
-      });
-    });
-
     context('no project opened in workspace', () => {
       it('shows an error message', () => {
         let command;
@@ -805,7 +615,7 @@ describe('Advanced New File', () => {
         const advancedNewFile = proxyquire('../src/extension', {
           vscode: {
             commands: { registerCommand },
-            workspace: { rootPath: undefined },
+            workspace: { workspaceFolders: [] },
             window: { showErrorMessage }
           }
         });
