@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
-import { compact } from 'lodash';
+import { compact, startsWith, sortBy } from 'lodash';
 import * as gitignoreToGlob from 'gitignore-to-glob';
 import { sync as globSync } from 'glob';
 import * as Cache from 'vscode-cache';
@@ -307,6 +307,39 @@ export async function dirQuickPickItems(
   return quickPickItems;
 }
 
+export function cacheSelection(
+  cache: Cache,
+  dir: DirectoryOption,
+  root: WorkspaceRoot) {
+
+  cache.put('last', dir);
+
+  let recentRoots = cache.get('recentRoots') || [];
+
+  const rootIndex = recentRoots.indexOf(root.rootPath);
+  if (rootIndex >= 0) recentRoots.splice(rootIndex, 1);
+
+  recentRoots.unshift(root.rootPath);
+  cache.put('recentRoots', recentRoots);
+}
+
+export function sortRoots(
+  roots: WorkspaceRoot[],
+  desiredOrder: string[]): WorkspaceRoot[] {
+
+  return sortBy(roots, (root) => {
+    const desiredIndex = desiredOrder.indexOf(root.rootPath);
+    return desiredIndex >= 0 ? desiredIndex : roots.length;
+  });
+}
+
+export function rootForDir(
+  roots: WorkspaceRoot[],
+  dir: DirectoryOption): WorkspaceRoot {
+
+  return roots.find(r => startsWith(dir.fsLocation.absolute, r.rootPath));
+}
+
 export async function command(context: vscode.ExtensionContext) {
   const roots = workspaceRoots();
 
@@ -314,11 +347,15 @@ export async function command(context: vscode.ExtensionContext) {
     const cacheName = roots.map(r => r.rootPath).join(';');
     const cache = new Cache(context, `workspace:${cacheName}`);
 
-    const dirSelection = await showQuickPick(dirQuickPickItems(roots, cache));
+    const sortedRoots = sortRoots(roots, cache.get('recentRoots') || []);
+
+    const dirSelection =
+      await showQuickPick(dirQuickPickItems(sortedRoots, cache));
     if (!dirSelection) return;
     const dir = dirSelection.option;
 
-    cache.put('last', dir);
+    const selectedRoot = rootForDir(roots, dir);
+    cacheSelection(cache, dir, selectedRoot);
 
     const newFileInput = await showInputBox(dir);
     if (!newFileInput) return;
