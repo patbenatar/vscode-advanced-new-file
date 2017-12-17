@@ -1,3 +1,9 @@
+# HEAD
+
+## What's New
+* Control the order of top convenient options ("last selection", "current file",
+  etc) via config setting `advancedNewFile.convenienceOptions`
+
 # 1.0.0
 
 ## What's New
