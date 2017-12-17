@@ -1,4 +1,4 @@
-# HEAD
+# 1.1.0
 
 ## What's New
 * Control the order of top convenient options ("last selection", "current file",
