@@ -7,6 +7,7 @@ import * as proxyquire from 'proxyquire';
 import * as path from 'path';
 import * as fs from 'fs';
 import { removeSync as removeDirSync } from 'fs-extra';
+import { cacheSelection } from '../src/extension';
 
 chai.use(chaiAsPromised);
 chai.use(spies);
@@ -451,6 +452,189 @@ describe('Advanced New File', () => {
       });
 
       expect(advancedNewFile.currentEditorPath()).to.eq('/foo/bar/baz/bip');
+    });
+  });
+
+  describe('rootForDir', () => {
+    it('returns the root for the selected dir base path', () => {
+      const fooRoot: AdvancedNewFile.WorkspaceRoot = {
+        rootPath: '/foo',
+        baseName: 'foo',
+        multi: true
+      };
+
+      const barRoot: AdvancedNewFile.WorkspaceRoot = {
+        rootPath: '/bar',
+        baseName: 'bar',
+        multi: true
+      };
+
+      const roots = [fooRoot, barRoot];
+
+      const selectedDir: AdvancedNewFile.DirectoryOption = {
+        displayText: 'foo',
+        fsLocation: {
+          relative: '/baz',
+          absolute: '/bar/baz'
+        }
+      };
+
+      const result = AdvancedNewFile.rootForDir(roots, selectedDir);
+      expect(result).to.eq(barRoot);
+    });
+  });
+
+  describe('cacheSelection', () => {
+    it('caches the last selected dir', () => {
+      const cache = { put: chai.spy(), get: () => [] };
+      const selectedDir: AdvancedNewFile.DirectoryOption = {
+        displayText: 'foo',
+        fsLocation: {
+          relative: '/bar',
+          absolute: '/foo/bar'
+        }
+      };
+      const selectedRoot: AdvancedNewFile.WorkspaceRoot = {
+        rootPath: '/foo',
+        baseName: 'foo',
+        multi: false
+      };
+
+      AdvancedNewFile.cacheSelection(cache, selectedDir, selectedRoot);
+
+      expect(cache.put).to.have.been.called.with('last', selectedDir);
+    });
+
+    it('reorders the cache of recent roots', () => {
+      const oldRecentRoots = ['/foo', '/bar', '/baz'];
+      const cache = { put: chai.spy(), get: () => oldRecentRoots };
+      const selectedDir: AdvancedNewFile.DirectoryOption = {
+        displayText: 'foo',
+        fsLocation: {
+          relative: '/bar',
+          absolute: '/foo/bar'
+        }
+      };
+      const selectedRoot: AdvancedNewFile.WorkspaceRoot = {
+        rootPath: '/bar',
+        baseName: 'bar',
+        multi: true
+      };
+
+      AdvancedNewFile.cacheSelection(cache, selectedDir, selectedRoot);
+
+      const newRecentRoots = ['/bar', '/foo', '/baz']
+
+      expect(cache.put).to.have.been.called.with('recentRoots', newRecentRoots);
+    });
+
+    context('root doesnt yet exist in cached recentRoots', () => {
+      it('prepends the new root', () => {
+        const oldRecentRoots = ['/foo', '/baz'];
+        const cache = { put: chai.spy(), get: () => oldRecentRoots };
+        const selectedDir: AdvancedNewFile.DirectoryOption = {
+          displayText: 'foo',
+          fsLocation: {
+            relative: '/bar',
+            absolute: '/foo/bar'
+          }
+        };
+        const selectedRoot: AdvancedNewFile.WorkspaceRoot = {
+          rootPath: '/bar',
+          baseName: 'bar',
+          multi: true
+        }
+
+        AdvancedNewFile.cacheSelection(cache, selectedDir, selectedRoot);
+
+        const newRecentRoots = ['/bar', '/foo', '/baz']
+
+        expect(cache.put).to.have.been.called.with('recentRoots', newRecentRoots);
+      });
+    });
+  });
+
+  describe('sortRootsByRecent', () => {
+    it('returns the roots sorted to match the cache of recent roots', () => {
+      const fooRoot: AdvancedNewFile.WorkspaceRoot = {
+        rootPath: '/foo',
+        baseName: 'foo',
+        multi: true
+      };
+
+      const barRoot: AdvancedNewFile.WorkspaceRoot = {
+        rootPath: '/bar',
+        baseName: 'bar',
+        multi: true
+      };
+
+      const bazRoot: AdvancedNewFile.WorkspaceRoot = {
+        rootPath: '/baz',
+        baseName: 'baz',
+        multi: true
+      };
+
+      const roots = [fooRoot, barRoot, bazRoot];
+      const desiredOrder = ['/bar', '/foo', '/baz'];
+
+      const result = AdvancedNewFile.sortRoots(roots, desiredOrder);
+      expect(result).to.eql([barRoot, fooRoot, bazRoot]);
+    });
+
+    context('no cache', () => {
+      it('returns the roots in their original order', () => {
+        const fooRoot: AdvancedNewFile.WorkspaceRoot = {
+          rootPath: '/foo',
+          baseName: 'foo',
+          multi: true
+        };
+
+        const barRoot: AdvancedNewFile.WorkspaceRoot = {
+          rootPath: '/bar',
+          baseName: 'bar',
+          multi: true
+        };
+
+        const roots = [fooRoot, barRoot];
+        const desiredOrder = [];
+
+        const result = AdvancedNewFile.sortRoots(roots, desiredOrder);
+        expect(result).to.eql(roots);
+      });
+    });
+
+    context('partial cache', () => {
+      it('sorts what it can, and returns un-cached roots at the end', () => {
+        const fooRoot: AdvancedNewFile.WorkspaceRoot = {
+          rootPath: '/foo',
+          baseName: 'foo',
+          multi: true
+        };
+
+        const barRoot: AdvancedNewFile.WorkspaceRoot = {
+          rootPath: '/bar',
+          baseName: 'bar',
+          multi: true
+        };
+
+        const bazRoot: AdvancedNewFile.WorkspaceRoot = {
+          rootPath: '/baz',
+          baseName: 'baz',
+          multi: true
+        };
+
+        const bipRoot: AdvancedNewFile.WorkspaceRoot = {
+          rootPath: '/bip',
+          baseName: 'bip',
+          multi: true
+        };
+
+        const roots = [fooRoot, bazRoot, barRoot, bipRoot];
+        const desiredOrder = ['/bar', '/foo'];
+
+        const result = AdvancedNewFile.sortRoots(roots, desiredOrder);
+        expect(result).to.eql([barRoot, fooRoot, bazRoot, bipRoot]);
+      });
     });
   });
 

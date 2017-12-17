@@ -3,6 +3,7 @@
 ## What's New
 * Control the order of top convenient options ("last selection", "current file",
   etc) via config setting `advancedNewFile.convenienceOptions`
+* In multi-root workspaces, order roots by recency
 
 # 1.0.0
 
