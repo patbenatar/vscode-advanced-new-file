@@ -91,6 +91,44 @@ function directoriesSync(root: string): FSLocation[] {
   return results;
 }
 
+function convenienceOptions(
+  roots: WorkspaceRoot[],
+  cache: Cache): vscode.QuickPickItem[] {
+
+  const config: string[] = vscode.workspace
+    .getConfiguration('advancedNewFile').get('convenienceOptions');
+
+  const optionsByName = {
+    last: [buildQuickPickItem(lastSelection(cache), '- last selection')],
+    current: [
+      buildQuickPickItem(currentEditorPathOption(roots), '- current file')
+    ],
+    root: rootOptions(roots).map(o => buildQuickPickItem(o, '- workspace root'))
+  };
+
+  const options = config
+    .map<vscode.QuickPickItem[]>(c => optionsByName[c]).reduce(flatten);
+
+  return compact<vscode.QuickPickItem>(options);
+}
+
+async function subdirOptionsForRoot(
+  root: WorkspaceRoot): Promise<DirectoryOption[]> {
+
+  const dirs = await directories(root.rootPath);
+
+  return dirs.map((dir: FSLocation): DirectoryOption => {
+    const displayText = root.multi ?
+      path.join(path.sep, root.baseName, dir.relative) :
+      dir.relative;
+
+    return {
+      displayText,
+      fsLocation: dir
+    };
+  });
+}
+
 export function showQuickPick(
   choices: Promise<vscode.QuickPickItem[]>): Thenable<QuickPickItem> {
 
@@ -214,23 +252,6 @@ export function workspaceRoots(): WorkspaceRoot[] {
   }
 }
 
-async function subdirOptionsForRoot(
-  root: WorkspaceRoot): Promise<DirectoryOption[]> {
-
-  const dirs = await directories(root.rootPath);
-
-  return dirs.map((dir: FSLocation): DirectoryOption => {
-    const displayText = root.multi ?
-      path.join(path.sep, root.baseName, dir.relative) :
-      dir.relative;
-
-    return {
-      displayText,
-      fsLocation: dir
-    };
-  });
-}
-
 export function rootOptions(roots: WorkspaceRoot[]): DirectoryOption[] {
   return roots.map((root): DirectoryOption => {
     return {
@@ -269,27 +290,6 @@ export function currentEditorPathOption(
       absolute: currentFilePath
     }
   };
-}
-
-function convenienceOptions(
-  roots: WorkspaceRoot[],
-  cache: Cache): vscode.QuickPickItem[] {
-
-  const config: string[] = vscode.workspace
-    .getConfiguration('advancedNewFile').get('convenienceOptions');
-
-  const optionsByName = {
-    last: [buildQuickPickItem(lastSelection(cache), '- last selection')],
-    current: [
-      buildQuickPickItem(currentEditorPathOption(roots), '- current file')
-    ],
-    root: rootOptions(roots).map(o => buildQuickPickItem(o, '- workspace root'))
-  };
-
-  const options = config
-    .map<vscode.QuickPickItem[]>(c => optionsByName[c]).reduce(flatten);
-
-  return compact<vscode.QuickPickItem>(options);
 }
 
 export async function dirQuickPickItems(
