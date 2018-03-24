@@ -71,7 +71,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "node ./node_modules/vscode/bin/test",
     "release": "vsce publish",
-    "lint": "tslint src/**"
+    "lint": "tslint src/** test/**"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
