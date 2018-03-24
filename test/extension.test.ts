@@ -202,6 +202,8 @@ describe('Advanced New File', () => {
         });
 
         it('creates an empty file', () => {
+          AdvancedNewFile.createFileOrFolder(newFileDescriptor);
+
           expect(fs.readFileSync(newFileDescriptor, { encoding: 'utf8' }))
             .to.eq('');
         });
