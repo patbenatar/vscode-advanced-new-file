@@ -2,6 +2,7 @@ import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as spies from 'chai-spies';
 import * as vscode from 'vscode';
+import { ViewColumn } from 'vscode';
 import * as AdvancedNewFile from '../src/extension';
 import * as proxyquire from 'proxyquire';
 import * as path from 'path';
@@ -300,7 +301,8 @@ describe('Advanced New File', () => {
       });
 
       advancedNewFile.openFile('/path/to/file.ts').then(() => {
-        expect(openTextDocument).to.have.been.called.with('/path/to/file.ts');
+        expect(openTextDocument)
+          .to.have.been.called.with('/path/to/file.ts', ViewColumn.Active);
       });
     });
 
