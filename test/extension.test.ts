@@ -189,7 +189,7 @@ describe('Advanced New File', () => {
     context('creating file', () => {
       context('file does not exist', () => {
         const newFileDescriptor = path.join(tmpDir, 'path/to/file.ts');
-        after(() => fs.unlinkSync(newFileDescriptor));
+        afterEach(() => fs.unlinkSync(newFileDescriptor));
 
         it('creates any nonexistent dirs in path', () => {
           AdvancedNewFile.createFileOrFolder(newFileDescriptor);
@@ -230,7 +230,7 @@ describe('Advanced New File', () => {
         const newFolderDescriptor = path.join(tmpDir, 'path/to/folder') +
           path.sep;
 
-        after(() => fs.rmdirSync(newFolderDescriptor));
+        afterEach(() => fs.rmdirSync(newFolderDescriptor));
 
         it('creates any nonexistent dirs in path', () => {
           AdvancedNewFile.createFileOrFolder(newFolderDescriptor);
@@ -243,6 +243,8 @@ describe('Advanced New File', () => {
         });
 
         it('creates a folder', () => {
+          AdvancedNewFile.createFileOrFolder(newFolderDescriptor);
+
           expect(fs.statSync(path.join(tmpDir, 'path/to/folder')).isDirectory())
             .to.be.true;
         });
