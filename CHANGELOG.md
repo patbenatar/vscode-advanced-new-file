@@ -1,3 +1,8 @@
+# 1.2.0
+
+## What's New
+* Open new document in active pane
+
 # 1.1.0
 
 ## What's New
