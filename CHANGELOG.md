@@ -1,3 +1,8 @@
+# HEAD
+
+## Misc
+* Update `vscode` devDependency to address `hoek` CVE warning
+
 # 1.2.0
 
 ## What's New

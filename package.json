@@ -55,7 +55,11 @@
         },
         "advancedNewFile.convenienceOptions": {
           "type": "array",
-          "default": ["last", "current", "root"],
+          "default": [
+            "last",
+            "current",
+            "root"
+          ],
           "description": "Convenience options display at the top of the list. Control which ones you see and in what order."
         }
       }
@@ -89,7 +93,7 @@
     "tslint": "^4.4.2",
     "typescript": "^2.1.6",
     "vsce": "^1.18.0",
-    "vscode": "^1.0.0"
+    "vscode": "^1.1.18"
   },
   "dependencies": {
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
