@@ -64,5 +64,5 @@ then providing new filename/path relative to the selection.
 1. Add your feature or fix (in `src/`) with test coverage (in `test/`)
 1. Launch the extension and do some manual QA (via Debug > Launch Extension)
 1. Run the tests (via Debug > Launch Tests)
-1. Run the linter: `tslint src/** test/**`
+1. Run the linter: `npm run lint`
 1. Open a PR
