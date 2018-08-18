@@ -88,17 +88,17 @@
     "chai-as-promised": "^6.0.0",
     "chai-spies": "^0.7.1",
     "fs-extra": "^1.0.0",
-    "mocha": "^2.3.3",
+    "mocha": "^5.2.0",
     "proxyquire": "^1.7.10",
     "tslint": "^4.4.2",
     "typescript": "^2.1.6",
-    "vsce": "^1.18.0",
+    "vsce": "^1.46.0",
     "vscode": "^1.1.18"
   },
   "dependencies": {
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
     "glob": "^7.1.1",
-    "lodash": "^4.17.2",
+    "lodash": "^4.17.10",
     "mkdirp": "^0.5.1",
     "vscode-cache": "^0.3.0"
   }
