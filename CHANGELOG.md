@@ -1,7 +1,8 @@
 # HEAD
 
 ## Misc
-* Update `vscode` devDependency to address `hoek` CVE warning
+* Update dependencies to address CVEs
+* Bump VS Code dependency to 1.26 (July 2018) for new QuickInput API
 
 # 1.2.0
 
