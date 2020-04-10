@@ -61,6 +61,11 @@
             "root"
           ],
           "description": "Convenience options display at the top of the list. Control which ones you see and in what order."
+        },
+        "advancedNewFile.expandBraces": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether braces should be expanded to multiple paths (such as {test1,test2}.js creating two files, test1.js and test2.js"
         }
       }
     }
@@ -96,6 +101,7 @@
     "vscode": "^1.1.18"
   },
   "dependencies": {
+    "braces": "^3.0.2",
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
     "glob": "^7.1.1",
     "lodash": "^4.17.2",

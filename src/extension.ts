@@ -8,6 +8,7 @@ import * as gitignoreToGlob from 'gitignore-to-glob';
 import { sync as globSync } from 'glob';
 import * as Cache from 'vscode-cache';
 import { QuickPickItem, ViewColumn } from 'vscode';
+import * as braces from 'braces';
 
 export interface FSLocation {
   relative: string;
@@ -188,6 +189,17 @@ export function currentEditorPath(): string {
   return path.dirname(activeEditor.document.fileName);
 }
 
+export function expandBraces(absolutePath: string): string[] {
+  const shouldExpandBraces =
+    vscode.workspace.getConfiguration('advancedNewFile').get('expandBraces');
+
+  if (!shouldExpandBraces) {
+    return [absolutePath];
+  }
+
+  return braces.expand(absolutePath);
+}
+
 export function createFileOrFolder(absolutePath: string): void {
   let directoryToFile = path.dirname(absolutePath);
 
@@ -213,7 +225,7 @@ export async function openFile(absolutePath: string): Promise<void> {
     const textDocument = await vscode.workspace.openTextDocument(absolutePath);
 
     if (textDocument) {
-      vscode.window.showTextDocument(textDocument, ViewColumn.Active);
+      vscode.window.showTextDocument(textDocument, { preview: false });
     }
   }
 }
@@ -360,8 +372,11 @@ export async function command(context: vscode.ExtensionContext) {
     const newFileInput = await showInputBox(dir);
     if (!newFileInput) return;
 
-    createFileOrFolder(newFileInput);
-    await openFile(newFileInput);
+    const newFileArray = expandBraces(newFileInput);
+    for (let newFile of newFileArray) {
+      createFileOrFolder(newFile);
+      await openFile(newFile);
+    }
   } else {
     await vscode.window.showErrorMessage(
       'It doesn\'t look like you have a folder opened in your workspace. ' +
