@@ -21,6 +21,7 @@ files anywhere in your workspace.
   AdvancedNewFile plugin only. (thanks to [Kaffiend](https://github.com/Kaffiend))
 * Control the order of top convenient options ("last selection", "current file",
   etc) via config setting `advancedNewFile.convenienceOptions`
+* Brace expansion - expand braces into multiple files. Entering `index.{html,css}` will create and open `index.html` and `index.css`. (thanks to [chuckhendo](https://github.com/chuckhendo))
 
 ## Configuration Example
 
@@ -32,7 +33,8 @@ files anywhere in your workspace.
   "dist": true
 },
 "advancedNewFile.showInformationMessages": true,
-"advancedNewFile.convenienceOptions": ["last", "current", "root"]
+"advancedNewFile.convenienceOptions": ["last", "current", "root"],
+"advancedNewFile.expandBraces": false
 ```
 
 ## Usage
