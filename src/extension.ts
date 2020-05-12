@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 import { compact, startsWith, sortBy } from 'lodash';
 import * as gitignoreToGlob from 'gitignore-to-glob';
-import { sync as globSync } from 'glob';
+import { sync as globSync } from 'globby';
 import * as Cache from 'vscode-cache';
 import { QuickPickItem, ViewColumn } from 'vscode';
 
@@ -78,15 +78,13 @@ function directoriesSync(root: string): FSLocation[] {
   const ignore =
     gitignoreGlobs(root).concat(configIgnoredGlobs(root)).map(invertGlob);
 
-  const results = globSync('**', { cwd: root, ignore })
+  const results = globSync('**', { cwd: root, onlyDirectories: true, ignore })
     .map((f): FSLocation => {
       return {
         relative: path.join(path.sep, f),
         absolute: path.join(root, f)
       };
     })
-    .filter(f => fs.statSync(f.absolute).isDirectory())
-    .map(f => f);
 
   return results;
 }
