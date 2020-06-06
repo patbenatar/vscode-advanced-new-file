@@ -84,7 +84,7 @@ function directoriesSync(root: string): FSLocation[] {
         relative: path.join(path.sep, f),
         absolute: path.join(root, f)
       };
-    })
+    });
 
   return results;
 }
@@ -132,7 +132,7 @@ export function showQuickPick(
 
   return vscode.window.showQuickPick<vscode.QuickPickItem>(choices, {
     placeHolder: 'First, select an existing path to create relative to ' +
-    '(larger projects may take a moment to load)'
+      '(larger projects may take a moment to load)'
   });
 }
 
