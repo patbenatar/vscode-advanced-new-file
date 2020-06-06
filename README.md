@@ -10,7 +10,8 @@ files anywhere in your workspace.
 
 ## Features
 
-* Fuzzy-matching autocomplete to create new file relative to existing path
+* Fuzzy-matching autocomplete to create new file relative to existing path (thanks to
+  [JoeNg93](https://github.com/JoeNg93) for making it faster)
 * Create new directories while creating a new file
 * Create a directory instead of a file by suffixing the file path with `/` as
   in `somedirectory/` to create the directory (thanks to

@@ -2,7 +2,7 @@
   "name": "advanced-new-file",
   "displayName": "advanced-new-file",
   "description": "Create files anywhere in your workspace from the keyboard",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "publisher": "patbenatar",
   "engines": {
     "vscode": "^1.17.0"
@@ -90,7 +90,7 @@
     "mocha": "^2.3.3",
     "proxyquire": "^1.7.10",
     "tslint": "^4.4.2",
-    "typescript": "^2.1.6",
+    "typescript": "^3.9.5",
     "vsce": "^1.18.0",
     "vscode": "^1.1.18"
   },
