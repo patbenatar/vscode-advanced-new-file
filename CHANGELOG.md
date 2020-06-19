@@ -1,3 +1,8 @@
+# 1.2.2
+
+## Misc
+* Revert change from glob to globby to fix regressions
+
 # 1.2.1
 
 ## Misc

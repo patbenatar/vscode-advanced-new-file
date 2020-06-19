@@ -2,7 +2,7 @@
   "name": "advanced-new-file",
   "displayName": "advanced-new-file",
   "description": "Create files anywhere in your workspace from the keyboard",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "publisher": "patbenatar",
   "engines": {
     "vscode": "^1.17.0"
@@ -78,6 +78,7 @@
     "@types/chai-as-promised": "0.0.29",
     "@types/chai-spies": "0.0.0",
     "@types/fs-extra": "0.0.35",
+    "@types/glob": "^5.0.30",
     "@types/lodash": "4.14.52",
     "@types/mkdirp": "^0.3.29",
     "@types/mocha": "^2.2.32",
@@ -96,8 +97,8 @@
   },
   "dependencies": {
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
-    "globby": "^11.0.0",
     "lodash": "^4.17.13",
+    "glob": "^7.1.1",
     "mkdirp": "^0.5.1",
     "vscode-cache": "^0.3.0"
   }
