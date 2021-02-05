@@ -8,6 +8,7 @@ import * as gitignoreToGlob from 'gitignore-to-glob';
 import { sync as globSync } from 'glob';
 import * as Cache from 'vscode-cache';
 import { QuickPickItem, ViewColumn } from 'vscode';
+import * as braces from "braces";
 
 export interface FSLocation {
   relative: string;
@@ -360,8 +361,20 @@ export async function command(context: vscode.ExtensionContext) {
     const newFileInput = await showInputBox(dir);
     if (!newFileInput) return;
 
-    createFileOrFolder(newFileInput);
-    await openFile(newFileInput);
+    const multipleFiles: boolean = vscode.workspace.getConfiguration('advancedNewFile').get('multipleFiles');
+
+    if (multipleFiles) {
+      const files: string[] = braces.expand(newFileInput);
+      
+      files.map(async (file) => {
+        createFileOrFolder(file);
+        await openFile(file);
+      });
+    } else {
+      createFileOrFolder(newFileInput);
+      await openFile(newFileInput);  
+    }
+
   } else {
     await vscode.window.showErrorMessage(
       'It doesn\'t look like you have a folder opened in your workspace. ' +
