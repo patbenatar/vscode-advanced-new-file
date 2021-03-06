@@ -67,3 +67,13 @@ then providing new filename/path relative to the selection.
 1. Run the tests (via Debug > Launch Tests)
 1. Run the linter: `npm run lint`
 1. Open a PR
+
+## Publishing
+
+### OpenVSX
+
+Change the publisher in package.json to giantcola, then run:
+
+```
+docker-compose run plugin ./node_modules/.bin/ovsx publish -p [token]
+```

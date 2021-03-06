@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  plugin:
+    build: .
+    volumes:
+      - .:/src
+      - /src/node_modules
+    working_dir: /src
