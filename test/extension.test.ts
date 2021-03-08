@@ -14,6 +14,20 @@ chai.use(chaiAsPromised);
 chai.use(spies);
 const expect = chai.expect;
 
+const mockGetConfiguration =
+(config = { showInformationMessages: true, expandBraces: false }) => {
+  return (name) => {
+    switch (name) {
+      case 'advancedNewFile':
+        return {
+          get: (configName) => config[configName]
+        };
+      default:
+        return {};
+    }
+  };
+};
+
 describe('Advanced New File', () => {
   describe('showInputBox', () => {
     it('resolves with the path to input from workspace root', async () => {
@@ -280,20 +294,6 @@ describe('Advanced New File', () => {
   });
 
   describe('openFile', () => {
-    const mockGetConfiguration =
-      (config = { showInformationMessages: true }) => {
-        return (name) => {
-          switch (name) {
-            case 'advancedNewFile':
-              return {
-                get: (configName) => config[configName]
-              };
-            default:
-              return {};
-          }
-        };
-      };
-
     it('attempts to open the file', () => {
       const textDocument = 'mock document';
       const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
@@ -410,6 +410,58 @@ describe('Advanced New File', () => {
           });
         });
       });
+    });
+  });
+
+  describe('expandBraces', () => {
+    context('expandBraces setting is true', () => {
+      const advancedNewFile =
+        proxyquire('../src/extension', {
+          vscode: {
+            workspace: {
+              getConfiguration: mockGetConfiguration({ expandBraces: true, showInformationMessages: true })
+            },
+          }
+        }) as typeof AdvancedNewFile;
+
+      it('expands braces to an array', () => {
+        const fileArray = advancedNewFile.expandBraces('test/{subfolder1,subfolder2}/file{1,2}.{html,ts}');
+        expect(fileArray).to.deep.eq([
+          'test/subfolder1/file1.html',
+          'test/subfolder1/file1.ts',
+          'test/subfolder1/file2.html',
+          'test/subfolder1/file2.ts',
+          'test/subfolder2/file1.html',
+          'test/subfolder2/file1.ts',
+          'test/subfolder2/file2.html',
+          'test/subfolder2/file2.ts'
+        ]);
+      });
+
+      it('returns a single item array if there are no braces', () => {
+        const fileArray = advancedNewFile.expandBraces('test/file1.html');
+        expect(fileArray).to.deep.eq([
+          'test/file1.html'
+        ]);
+      });
+    });
+
+    context('expandBraces setting is false', () => {
+      const advancedNewFile =
+        proxyquire('../src/extension', {
+          vscode: {
+            workspace: {
+              getConfiguration: mockGetConfiguration({ expandBraces: false, showInformationMessages: true })
+            },
+          }
+        }) as typeof AdvancedNewFile;
+      
+      it('returns a single item array regardless of presence of braces', () => {
+        const fileArray = advancedNewFile.expandBraces('test/file{1,2}.html');
+        expect(fileArray).to.deep.eq([
+          'test/file{1,2}.html'
+        ]);
+      })
     });
   });
 
