@@ -98,7 +98,7 @@
   },
   "dependencies": {
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.21",
     "glob": "^7.1.1",
     "mkdirp": "^0.5.1",
     "vscode-cache": "^0.3.0"
