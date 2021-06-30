@@ -237,7 +237,7 @@ export function workspaceRoots(): WorkspaceRoot[] {
     return vscode.workspace.workspaceFolders.map((folder) => {
       return {
         rootPath: folder.uri.fsPath,
-        baseName: path.basename(folder.uri.fsPath),
+        baseName: folder.name || path.basename(folder.uri.fsPath),
         multi
       };
     });
