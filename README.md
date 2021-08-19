@@ -58,6 +58,9 @@ https://github.com/Microsoft/vscode/issues/426), we work around this limitation
 and provide autocomplete using a two-step workflow of selecting existing path,
 then providing new filename/path relative to the selection.
 
+If you encounter an error on Mac or Linux check for broken symlinks with:
+`find . -xtype l`
+
 ## Contributing
 
 1. Clone the repo
