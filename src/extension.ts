@@ -273,7 +273,8 @@ export function currentEditorPathOption(
 
   if (!currentFileRoot) return;
 
-  const rootMatcher = new RegExp(`^${currentFileRoot.rootPath}`);
+  const rootPath = currentFileRoot.rootPath.replace(/[\/.*+?^${}()|[\]\\]/g, '\\$&');
+  const rootMatcher = new RegExp(rootPath);
   let relativeCurrentFilePath = currentFilePath.replace(rootMatcher, '');
 
   relativeCurrentFilePath =
