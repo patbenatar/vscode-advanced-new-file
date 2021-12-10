@@ -85,7 +85,10 @@ function directoriesSync(root: string): FSLocation[] {
         absolute: path.join(root, f)
       };
     })
-    .filter(f => fs.statSync(f.absolute).isDirectory())
+    .filter(f => {
+      const stat = fs.lstatSync(f.absolute);
+      return !stat.isSymbolicLink() && stat.isDirectory();
+    })
     .map(f => f);
 
   return results;
