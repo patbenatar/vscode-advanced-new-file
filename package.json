@@ -2,7 +2,7 @@
   "name": "advanced-new-file",
   "displayName": "advanced-new-file",
   "description": "Create files anywhere in your workspace from the keyboard",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "publisher": "patbenatar",
   "engines": {
     "vscode": "^1.17.0"
