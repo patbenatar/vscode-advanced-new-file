@@ -1,3 +1,8 @@
+# 1.3.0
+
+## What's New
+* Adds an `advancedNewFile.expandBraces` configuration option to expand braces in filepath to create and open multiple files: `/path/to/file.{tsx,spec.tsx} => [/path/to/file.tsx, /path/to/file.spec.tsx]`
+
 # 1.2.2
 
 ## Misc
