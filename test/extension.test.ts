@@ -396,6 +396,7 @@ describe('Advanced New File', () => {
                 workspace: {
                   openTextDocument,
                   getConfiguration: mockGetConfiguration({
+                    expandBraces: false,
                     showInformationMessages: false
                   })
                 },

@@ -225,7 +225,14 @@ export async function openFile(absolutePath: string): Promise<void> {
     const textDocument = await vscode.workspace.openTextDocument(absolutePath);
 
     if (textDocument) {
-      vscode.window.showTextDocument(textDocument, { preview: false });
+      const shouldExpandBraces =
+    vscode.workspace.getConfiguration('advancedNewFile').get('expandBraces');
+
+      if (shouldExpandBraces) {
+        vscode.window.showTextDocument(textDocument, { preview: false });
+      } else {
+        vscode.window.showTextDocument(textDocument, ViewColumn.Active);
+      }
     }
   }
 }
