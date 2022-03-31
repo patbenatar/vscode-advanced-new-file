@@ -1,6 +1,12 @@
-# HEAD
+# 1.2.2
 
 ## Misc
+* Revert change from glob to globby to fix regressions
+
+# 1.2.1
+
+## Misc
+* Faster glob searching for big projects
 * Update `vscode` devDependency to address `hoek` CVE warning
 
 # 1.2.0

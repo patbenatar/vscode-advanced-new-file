@@ -10,7 +10,8 @@ files anywhere in your workspace.
 
 ## Features
 
-* Fuzzy-matching autocomplete to create new file relative to existing path
+* Fuzzy-matching autocomplete to create new file relative to existing path (thanks to
+  [JoeNg93](https://github.com/JoeNg93) for making it faster)
 * Create new directories while creating a new file
 * Create a directory instead of a file by suffixing the file path with `/` as
   in `somedirectory/` to create the directory (thanks to
@@ -59,6 +60,9 @@ https://github.com/Microsoft/vscode/issues/426), we work around this limitation
 and provide autocomplete using a two-step workflow of selecting existing path,
 then providing new filename/path relative to the selection.
 
+If you encounter an error on Mac or Linux check for broken symlinks with:
+`find . -xtype l`
+
 ## Contributing
 
 1. Clone the repo
@@ -68,3 +72,13 @@ then providing new filename/path relative to the selection.
 1. Run the tests (via Debug > Launch Tests)
 1. Run the linter: `npm run lint`
 1. Open a PR
+
+## Publishing
+
+### OpenVSX
+
+Change the publisher in package.json to giantcola, then run:
+
+```
+docker-compose run plugin ./node_modules/.bin/ovsx publish -p [token]
+```

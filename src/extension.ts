@@ -135,7 +135,7 @@ export function showQuickPick(
 
   return vscode.window.showQuickPick<vscode.QuickPickItem>(choices, {
     placeHolder: 'First, select an existing path to create relative to ' +
-    '(larger projects may take a moment to load)'
+      '(larger projects may take a moment to load)'
   });
 }
 
@@ -249,7 +249,7 @@ export function workspaceRoots(): WorkspaceRoot[] {
     return vscode.workspace.workspaceFolders.map((folder) => {
       return {
         rootPath: folder.uri.fsPath,
-        baseName: path.basename(folder.uri.fsPath),
+        baseName: folder.name || path.basename(folder.uri.fsPath),
         multi
       };
     });
