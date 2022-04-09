@@ -102,7 +102,7 @@
     "ovsx": "0.1.0-next.a9154dc"
   },
   "dependencies": {
-    "braces": "^3.0.2",
+    "braces": "^2.3.1",
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
     "lodash": "^4.17.13",
     "glob": "^7.1.1",
