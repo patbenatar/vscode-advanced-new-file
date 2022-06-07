@@ -4,6 +4,7 @@
   "description": "Create files anywhere in your workspace from the keyboard",
   "version": "1.3.0",
   "publisher": "patbenatar",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.17.0"
   },

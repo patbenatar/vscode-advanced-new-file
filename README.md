@@ -1,4 +1,10 @@
-# VSCode Advanced New File
+<p align="center">
+  <img height="200" src="icon.png">
+</p>
+
+<h1 align="center">
+  VSCode Advanced New File
+</h1>
 
 [![Travis](https://travis-ci.org/patbenatar/vscode-advanced-new-file.svg?branch=master)](https://travis-ci.org/patbenatar/vscode-advanced-new-file)
 [![AppVeyor](https://ci.appveyor.com/api/projects/status/jelxhuh2ssuckk0n/branch/master?svg=true)](https://ci.appveyor.com/project/patbenatar/vscode-advanced-new-file)
