@@ -79,17 +79,17 @@ function directoriesSync(root: string): FSLocation[] {
   //A: returns all the subdirectories
   const ignore =
     gitignoreGlobs(root).concat(configIgnoredGlobs(root)).map(invertGlob);
-   
-  const results2 = fg.sync('**', { cwd: root,ignore: ignore,onlyFiles: false,  })
+
+  const results = fg.sync('**', { cwd: root, ignore, onlyFiles: false  })
     .map((f): FSLocation => {
-      return { 
+      return {
         relative: path.join(path.sep, f),
         absolute: path.join(root, f)
       };
     })
     .filter(f => fs.statSync(f.absolute).isDirectory());
 
-  return results2;
+  return results;
 }
 
 function convenienceOptions(
@@ -260,7 +260,7 @@ export function workspaceRoots(): WorkspaceRoot[] {
         rootPath: folder.uri.fsPath,
         baseName: folder.name || path.basename(folder.uri.fsPath),
         multi
-        
+
       };
     });
     //A: it there is no opened workspace folders then just get the base folder
@@ -372,11 +372,11 @@ export async function command(context: vscode.ExtensionContext) {
   if (roots.length > 0) {
     //A: join all the root paths with a ;
     const cacheName = roots.map(r => r.rootPath).join(';');
-    
+
     //A: open the cache specified by the cacheName
     //A: the namespace of the cache consists of all the paths of opened folders
     const cache = new Cache(context, `workspace:${cacheName}`);
-    //A: puts the rescent Roots at the begining 
+    //A: puts the rescent Roots at the begining
     const sortedRoots = sortRoots(roots, cache.get('recentRoots') || []);
     //A: choose the root here
     //A: that's the bitch i think
