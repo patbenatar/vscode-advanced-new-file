@@ -29,7 +29,7 @@
     "keybindings": [
       {
         "command": "extension.advancedNewFile",
-        "key": "alt+ctrl+t",
+        "key": "alt+ctrl+n",
         "mac": "alt+cmd+n"
       }
     ],
@@ -105,13 +105,8 @@
     "braces": "^3.0.2",
     "fast-glob": "^3.2.11",
     "gitignore-to-glob": "github:patbenatar/gitignore-to-glob",
-    "glob": "^7.1.1",
-    "globby": "^13.1.2",
     "lodash": "^4.17.13",
-    "micromatch": "^4.0.5",
-    "minimatch": "^5.1.0",
     "mkdirp": "^0.5.1",
-    "recursive-readdir": "^2.2.2",
     "vscode-cache": "^0.3.0"
   }
 }
