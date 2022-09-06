@@ -9,7 +9,8 @@ import { sync as globSync } from 'glob';
 import * as Cache from 'vscode-cache';
 import { QuickPickItem, ViewColumn } from 'vscode';
 import * as braces from 'braces';
-const micromatch = require('micromatch');
+const fg = require('fast-glob');
+
 export interface FSLocation {
   relative: string;
   absolute: string;
@@ -79,51 +80,17 @@ function directoriesSync(root: string): FSLocation[] {
   //A: returns all the subdirectories
   const ignore =
     gitignoreGlobs(root).concat(configIgnoredGlobs(root)).map(invertGlob);
-  
-  //A: it's done this way beacause of the ignare thing
-  const results = globSync('**', { cwd: root, ignore })
+   
+  const results2 = fg.sync('**', { cwd: root,ignore: ignore,onlyFiles: false,  })
     .map((f): FSLocation => {
-      return {
+      return { 
         relative: path.join(path.sep, f),
         absolute: path.join(root, f)
       };
     })
     .filter(f => fs.statSync(f.absolute).isDirectory());
-   
 
-    function flatten(lists) {
-      return lists.reduce((a, b) => a.concat(b), []);
-    }
-    
-    function getDirectories(srcpath:FSLocation) {
-      return fs.readdirSync(srcpath.absolute)
-      .map((f): FSLocation => {
-        return {
-          relative: path.join(srcpath.relative, f),
-          absolute: path.join(srcpath.absolute, f)
-        };
-      })
-      .filter(f => fs.statSync(f.absolute).isDirectory() );
-    }
-    
-    function getDirectoriesRecursive(srcpath : FSLocation) {
-      return [srcpath,...flatten(getDirectories(srcpath).map(getDirectoriesRecursive))];
-    }
-
-    var root_fs =  {
-      relative: path.sep,
-      absolute: root
-    }
-    const results2: FSLocation[] = getDirectoriesRecursive(root_fs)
-
-    //fs.statSync(path+'/'+file).isDirectory()
-    console.log(ignore);
-    console.log("------------------============------------------------");
-    console.log(results);
-    console.log("------------------============------------------------");
-    console.log(results2);
-
-  return results;
+  return results2;
 }
 
 function convenienceOptions(
