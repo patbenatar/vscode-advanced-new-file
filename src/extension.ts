@@ -117,7 +117,6 @@ async function subdirOptionsForRoot(
   root: WorkspaceRoot): Promise<DirectoryOption[]> {
 
     //A: that takes alot of time
-  console.log('here: subdirOptionsForRoot')
   const dirs = await directories(root.rootPath);
 
   return dirs.map((dir: FSLocation): DirectoryOption => {
@@ -324,7 +323,6 @@ export async function dirQuickPickItems(
 
     roots.map(async r => await subdirOptionsForRoot(r))
   );
-  console.log("after first");
 
   let quickPickItems =
     dirOptions.reduce(flatten).map(o => buildQuickPickItem(o));
