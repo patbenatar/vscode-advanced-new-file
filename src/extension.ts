@@ -5,7 +5,6 @@ import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 import { compact, startsWith, sortBy } from 'lodash';
 import * as gitignoreToGlob from 'gitignore-to-glob';
-import { sync as globSync } from 'glob';
 import * as Cache from 'vscode-cache';
 import { QuickPickItem, ViewColumn } from 'vscode';
 import * as braces from 'braces';
