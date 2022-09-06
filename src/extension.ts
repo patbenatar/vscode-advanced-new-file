@@ -9,7 +9,7 @@ import { sync as globSync } from 'glob';
 import * as Cache from 'vscode-cache';
 import { QuickPickItem, ViewColumn } from 'vscode';
 import * as braces from 'braces';
-
+const micromatch = require('micromatch');
 export interface FSLocation {
   relative: string;
   absolute: string;
@@ -76,9 +76,11 @@ function configIgnoredGlobs(root: string): string[] {
 }
 
 function directoriesSync(root: string): FSLocation[] {
+  //A: returns all the subdirectories
   const ignore =
     gitignoreGlobs(root).concat(configIgnoredGlobs(root)).map(invertGlob);
-
+  
+  //A: it's done this way beacause of the ignare thing
   const results = globSync('**', { cwd: root, ignore })
     .map((f): FSLocation => {
       return {
@@ -86,8 +88,40 @@ function directoriesSync(root: string): FSLocation[] {
         absolute: path.join(root, f)
       };
     })
-    .filter(f => fs.statSync(f.absolute).isDirectory())
-    .map(f => f);
+    .filter(f => fs.statSync(f.absolute).isDirectory());
+   
+
+    function flatten(lists) {
+      return lists.reduce((a, b) => a.concat(b), []);
+    }
+    
+    function getDirectories(srcpath:FSLocation) {
+      return fs.readdirSync(srcpath.absolute)
+      .map((f): FSLocation => {
+        return {
+          relative: path.join(srcpath.relative, f),
+          absolute: path.join(srcpath.absolute, f)
+        };
+      })
+      .filter(f => fs.statSync(f.absolute).isDirectory() );
+    }
+    
+    function getDirectoriesRecursive(srcpath : FSLocation) {
+      return [srcpath,...flatten(getDirectories(srcpath).map(getDirectoriesRecursive))];
+    }
+
+    var root_fs =  {
+      relative: path.sep,
+      absolute: root
+    }
+    const results2: FSLocation[] = getDirectoriesRecursive(root_fs)
+
+    //fs.statSync(path+'/'+file).isDirectory()
+    console.log(ignore);
+    console.log("------------------============------------------------");
+    console.log(results);
+    console.log("------------------============------------------------");
+    console.log(results2);
 
   return results;
 }
@@ -116,6 +150,8 @@ function convenienceOptions(
 async function subdirOptionsForRoot(
   root: WorkspaceRoot): Promise<DirectoryOption[]> {
 
+    //A: that takes alot of time
+  console.log('here: subdirOptionsForRoot')
   const dirs = await directories(root.rootPath);
 
   return dirs.map((dir: FSLocation): DirectoryOption => {
@@ -255,11 +291,14 @@ export function workspaceRoots(): WorkspaceRoot[] {
 
     return vscode.workspace.workspaceFolders.map((folder) => {
       return {
+        //A: All the opened Folders
         rootPath: folder.uri.fsPath,
         baseName: folder.name || path.basename(folder.uri.fsPath),
         multi
+        
       };
     });
+    //A: it there is no opened workspace folders then just get the base folder
   } else if (vscode.workspace.rootPath) {
     return [{
       rootPath: vscode.workspace.rootPath,
@@ -316,8 +355,11 @@ export async function dirQuickPickItems(
   cache: Cache): Promise<vscode.QuickPickItem[]> {
 
   const dirOptions = await Promise.all(
+
     roots.map(async r => await subdirOptionsForRoot(r))
   );
+  console.log("after first");
+
   let quickPickItems =
     dirOptions.reduce(flatten).map(o => buildQuickPickItem(o));
 
@@ -347,6 +389,7 @@ export function sortRoots(
   desiredOrder: string[]): WorkspaceRoot[] {
 
   return sortBy(roots, (root) => {
+    //A: if found then put it at the begining, else at the end with the same order
     const desiredIndex = desiredOrder.indexOf(root.rootPath);
     return desiredIndex >= 0 ? desiredIndex : roots.length;
   });
@@ -363,19 +406,27 @@ export async function command(context: vscode.ExtensionContext) {
   const roots = workspaceRoots();
 
   if (roots.length > 0) {
+    //A: join all the root paths with a ;
     const cacheName = roots.map(r => r.rootPath).join(';');
+    
+    //A: open the cache specified by the cacheName
+    //A: the namespace of the cache consists of all the paths of opened folders
     const cache = new Cache(context, `workspace:${cacheName}`);
-
+    //A: puts the rescent Roots at the begining 
     const sortedRoots = sortRoots(roots, cache.get('recentRoots') || []);
+    //A: choose the root here
+    //A: that's the bitch i think
 
     const dirSelection =
       await showQuickPick(dirQuickPickItems(sortedRoots, cache));
+
+    //A: if the user pressed enter with the root then fuckin leave
     if (!dirSelection) return;
     const dir = dirSelection.option;
 
     const selectedRoot = rootForDir(roots, dir);
     cacheSelection(cache, dir, selectedRoot);
-
+    //A: enter the desired file or dir to be created here
     const newFileInput = await showInputBox(dir);
     if (!newFileInput) return;
 
@@ -385,6 +436,7 @@ export async function command(context: vscode.ExtensionContext) {
       await openFile(newFile);
     }
   } else {
+    //A: Didn't find any folder in the workspace
     await vscode.window.showErrorMessage(
       'It doesn\'t look like you have a folder opened in your workspace. ' +
       'Try opening a folder first.'
