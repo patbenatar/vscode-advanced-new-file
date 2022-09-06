@@ -76,7 +76,6 @@ function configIgnoredGlobs(root: string): string[] {
 }
 
 function directoriesSync(root: string): FSLocation[] {
-  //A: returns all the subdirectories
   const ignore =
     gitignoreGlobs(root).concat(configIgnoredGlobs(root)).map(invertGlob);
 
@@ -116,7 +115,6 @@ function convenienceOptions(
 async function subdirOptionsForRoot(
   root: WorkspaceRoot): Promise<DirectoryOption[]> {
 
-    //A: that takes alot of time
   const dirs = await directories(root.rootPath);
 
   return dirs.map((dir: FSLocation): DirectoryOption => {
@@ -256,14 +254,12 @@ export function workspaceRoots(): WorkspaceRoot[] {
 
     return vscode.workspace.workspaceFolders.map((folder) => {
       return {
-        //A: All the opened Folders
         rootPath: folder.uri.fsPath,
         baseName: folder.name || path.basename(folder.uri.fsPath),
         multi
 
       };
     });
-    //A: it there is no opened workspace folders then just get the base folder
   } else if (vscode.workspace.rootPath) {
     return [{
       rootPath: vscode.workspace.rootPath,
@@ -353,7 +349,6 @@ export function sortRoots(
   desiredOrder: string[]): WorkspaceRoot[] {
 
   return sortBy(roots, (root) => {
-    //A: if found then put it at the begining, else at the end with the same order
     const desiredIndex = desiredOrder.indexOf(root.rootPath);
     return desiredIndex >= 0 ? desiredIndex : roots.length;
   });
@@ -370,27 +365,19 @@ export async function command(context: vscode.ExtensionContext) {
   const roots = workspaceRoots();
 
   if (roots.length > 0) {
-    //A: join all the root paths with a ;
     const cacheName = roots.map(r => r.rootPath).join(';');
 
-    //A: open the cache specified by the cacheName
-    //A: the namespace of the cache consists of all the paths of opened folders
     const cache = new Cache(context, `workspace:${cacheName}`);
-    //A: puts the rescent Roots at the begining
     const sortedRoots = sortRoots(roots, cache.get('recentRoots') || []);
-    //A: choose the root here
-    //A: that's the bitch i think
 
     const dirSelection =
       await showQuickPick(dirQuickPickItems(sortedRoots, cache));
 
-    //A: if the user pressed enter with the root then fuckin leave
     if (!dirSelection) return;
     const dir = dirSelection.option;
 
     const selectedRoot = rootForDir(roots, dir);
     cacheSelection(cache, dir, selectedRoot);
-    //A: enter the desired file or dir to be created here
     const newFileInput = await showInputBox(dir);
     if (!newFileInput) return;
 
@@ -400,7 +387,6 @@ export async function command(context: vscode.ExtensionContext) {
       await openFile(newFile);
     }
   } else {
-    //A: Didn't find any folder in the workspace
     await vscode.window.showErrorMessage(
       'It doesn\'t look like you have a folder opened in your workspace. ' +
       'Try opening a folder first.'
