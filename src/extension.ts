@@ -79,15 +79,13 @@ function directoriesSync(root: string): FSLocation[] {
   const ignore =
     gitignoreGlobs(root).concat(configIgnoredGlobs(root)).map(invertGlob);
 
-  const results = fg.sync('**', { cwd: root, ignore, onlyFiles: false  })
+  const results = fg.sync('**', { cwd: root, ignore, onlyDirectories:true  })
     .map((f): FSLocation => {
       return {
         relative: path.join(path.sep, f),
         absolute: path.join(root, f)
       };
-    })
-    .filter(f => fs.statSync(f.absolute).isDirectory());
-
+    });
   return results;
 }
 
