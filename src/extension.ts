@@ -5,10 +5,10 @@ import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 import { compact, startsWith, sortBy } from 'lodash';
 import * as gitignoreToGlob from 'gitignore-to-glob';
-import { sync as globSync } from 'glob';
 import * as Cache from 'vscode-cache';
 import { QuickPickItem, ViewColumn } from 'vscode';
 import * as braces from 'braces';
+const fg = require('fast-glob');
 
 export interface FSLocation {
   relative: string;
@@ -79,16 +79,13 @@ function directoriesSync(root: string): FSLocation[] {
   const ignore =
     gitignoreGlobs(root).concat(configIgnoredGlobs(root)).map(invertGlob);
 
-  const results = globSync('**', { cwd: root, ignore })
+  const results = fg.sync('**', { cwd: root, ignore, onlyDirectories:true  })
     .map((f): FSLocation => {
       return {
         relative: path.join(path.sep, f),
         absolute: path.join(root, f)
       };
-    })
-    .filter(f => fs.statSync(f.absolute).isDirectory())
-    .map(f => f);
-
+    });
   return results;
 }
 
@@ -258,6 +255,7 @@ export function workspaceRoots(): WorkspaceRoot[] {
         rootPath: folder.uri.fsPath,
         baseName: folder.name || path.basename(folder.uri.fsPath),
         multi
+
       };
     });
   } else if (vscode.workspace.rootPath) {
@@ -316,8 +314,10 @@ export async function dirQuickPickItems(
   cache: Cache): Promise<vscode.QuickPickItem[]> {
 
   const dirOptions = await Promise.all(
+
     roots.map(async r => await subdirOptionsForRoot(r))
   );
+
   let quickPickItems =
     dirOptions.reduce(flatten).map(o => buildQuickPickItem(o));
 
@@ -364,18 +364,18 @@ export async function command(context: vscode.ExtensionContext) {
 
   if (roots.length > 0) {
     const cacheName = roots.map(r => r.rootPath).join(';');
-    const cache = new Cache(context, `workspace:${cacheName}`);
 
+    const cache = new Cache(context, `workspace:${cacheName}`);
     const sortedRoots = sortRoots(roots, cache.get('recentRoots') || []);
 
     const dirSelection =
       await showQuickPick(dirQuickPickItems(sortedRoots, cache));
+
     if (!dirSelection) return;
     const dir = dirSelection.option;
 
     const selectedRoot = rootForDir(roots, dir);
     cacheSelection(cache, dir, selectedRoot);
-
     const newFileInput = await showInputBox(dir);
     if (!newFileInput) return;
 

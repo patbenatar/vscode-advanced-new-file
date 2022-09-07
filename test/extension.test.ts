@@ -421,7 +421,7 @@ describe('Advanced New File', () => {
           vscode: {
             workspace: {
               getConfiguration: mockGetConfiguration({ expandBraces: true, showInformationMessages: true })
-            },
+            }
           }
         }) as typeof AdvancedNewFile;
 
@@ -453,16 +453,16 @@ describe('Advanced New File', () => {
           vscode: {
             workspace: {
               getConfiguration: mockGetConfiguration({ expandBraces: false, showInformationMessages: true })
-            },
+            }
           }
         }) as typeof AdvancedNewFile;
-      
+
       it('returns a single item array regardless of presence of braces', () => {
         const fileArray = advancedNewFile.expandBraces('test/file{1,2}.html');
         expect(fileArray).to.deep.eq([
           'test/file{1,2}.html'
         ]);
-      })
+      });
     });
   });
 
