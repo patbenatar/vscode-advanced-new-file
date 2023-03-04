@@ -213,7 +213,7 @@ export function createFileOrFolder(absolutePath: string): void {
   }
 }
 
-export async function openFile(absolutePath: string): Promise<void> {
+export async function openFile(absolutePath: string, sourceFile): Promise<void> {
   if (isFolderDescriptor(absolutePath)) {
     const showInformationMessages = vscode.workspace
       .getConfiguration('advancedNewFile').get('showInformationMessages', true);
@@ -233,6 +233,16 @@ export async function openFile(absolutePath: string): Promise<void> {
       } else {
         vscode.window.showTextDocument(textDocument, ViewColumn.Active);
       }
+
+      setTimeout(() => {
+        const editor = vscode.window.activeTextEditor;
+          editor.edit(editBuilder => {
+            const relativeFileName = sourceFile.split("packages")[1];
+            const relativePath = relativeFileName.split(".js")[0];
+            editBuilder.insert(editor.selection.active, `const path = "${relativePath}";`);
+          });
+      }, 1000);
+      
     }
   }
 }
@@ -363,26 +373,30 @@ export async function command(context: vscode.ExtensionContext) {
   const roots = workspaceRoots();
 
   if (roots.length > 0) {
-    const cacheName = roots.map(r => r.rootPath).join(';');
-    const cache = new Cache(context, `workspace:${cacheName}`);
 
-    const sortedRoots = sortRoots(roots, cache.get('recentRoots') || []);
+    const currentFile = vscode.window?.activeTextEditor?.document?.fileName;
+    if (!currentFile) {
+			vscode.window.showWarningMessage('Could not determine active file.');
+			return;
+		}
 
-    const dirSelection =
-      await showQuickPick(dirQuickPickItems(sortedRoots, cache));
-    if (!dirSelection) return;
-    const dir = dirSelection.option;
+		if (currentFile.indexOf('/packages/') === -1) {
+			vscode.window.showWarningMessage(`Active file '${currentFile}' does not seem to be located within a packages/ ` +
+				`directory. Cannot determine packages/ relative path.`);
+			return;
+		}
+    
+    const relativeTestPath = currentFile?.replace("/packages/","/test/");
+    if (relativeTestPath.indexOf('.test.js') !== -1) {
+      vscode.window.showWarningMessage('You are in a test file already.');
+			return;
+    }
+    const relativeTestFile = relativeTestPath?.replace(".js",".test.js");
 
-    const selectedRoot = rootForDir(roots, dir);
-    cacheSelection(cache, dir, selectedRoot);
-
-    const newFileInput = await showInputBox(dir);
-    if (!newFileInput) return;
-
-    const newFileArray = expandBraces(newFileInput);
+    const newFileArray = expandBraces(relativeTestFile);
     for (let newFile of newFileArray) {
-      createFileOrFolder(newFile);
-      await openFile(newFile);
+      if (!fs.existsSync(relativeTestFile))createFileOrFolder(newFile);
+      await openFile(newFile, currentFile);
     }
   } else {
     await vscode.window.showErrorMessage(
