@@ -213,7 +213,7 @@ export function createFileOrFolder(absolutePath: string): void {
   }
 }
 
-export async function openFile(absolutePath: string, sourceFile): Promise<void> {
+export async function openFile(absolutePath: string, sourceFile, isContentEmpty= false): Promise<void> {
   if (isFolderDescriptor(absolutePath)) {
     const showInformationMessages = vscode.workspace
       .getConfiguration('advancedNewFile').get('showInformationMessages', true);
@@ -234,7 +234,7 @@ export async function openFile(absolutePath: string, sourceFile): Promise<void> 
         vscode.window.showTextDocument(textDocument, ViewColumn.Active);
       }
 
-      setTimeout(() => {
+      isContentEmpty && setTimeout(() => {
         const editor = vscode.window.activeTextEditor;
           editor.edit(editBuilder => {
             const relativeFileName = sourceFile.split("packages")[1];
@@ -386,7 +386,7 @@ export async function command(context: vscode.ExtensionContext) {
 			return;
 		}
     
-    const relativeTestPath = currentFile?.replace("/packages/","/test/");
+    const relativeTestPath = currentFile?.replace("/packages/","/__tests/src/");
     if (relativeTestPath.indexOf('.test.js') !== -1) {
       vscode.window.showWarningMessage('You are in a test file already.');
 			return;
@@ -395,8 +395,9 @@ export async function command(context: vscode.ExtensionContext) {
 
     const newFileArray = expandBraces(relativeTestFile);
     for (let newFile of newFileArray) {
-      if (!fs.existsSync(relativeTestFile))createFileOrFolder(newFile);
-      await openFile(newFile, currentFile);
+      const noFileYet =!fs.existsSync(relativeTestFile);
+      if (noFileYet) createFileOrFolder(newFile);
+      await openFile(newFile, currentFile, noFileYet);
     }
   } else {
     await vscode.window.showErrorMessage(
