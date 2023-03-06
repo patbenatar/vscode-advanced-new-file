@@ -310,7 +310,7 @@ describe('Advanced New File', () => {
           }
         }) as typeof AdvancedNewFile;
 
-      advancedNewFile.openFile('/path/to/file.ts').then(() => {
+      advancedNewFile.openFile('/path/to/file.ts','/').then(() => {
         expect(openTextDocument)
           .to.have.been.called.with('/path/to/file.ts', ViewColumn.Active);
       });
@@ -333,7 +333,7 @@ describe('Advanced New File', () => {
             }
           }) as typeof AdvancedNewFile;
 
-        return advancedNewFile.openFile('/path/to/file.ts').then(() => {
+        return advancedNewFile.openFile('/path/to/file.ts','/').then(() => {
           expect(showTextDocument).to.have.been.called.with(textDocument);
         });
       });
@@ -357,7 +357,7 @@ describe('Advanced New File', () => {
             }
           }) as typeof AdvancedNewFile;
 
-        advancedNewFile.openFile(path.join('path/to/folder/')).then(() => {
+        advancedNewFile.openFile(path.join('path/to/folder/'), '/').then(() => {
           expect(openTextDocument).not.to.have.been.called();
         });
       });
@@ -379,7 +379,7 @@ describe('Advanced New File', () => {
             }
           }) as typeof AdvancedNewFile;
 
-        advancedNewFile.openFile(path.join('path/to/folder/')).then(() => {
+        advancedNewFile.openFile(path.join('path/to/folder/'), '/').then(() => {
           expect(showInformationMessage).to
             .have.been.called.with('Folder created: /path/to/folder/');
         });
@@ -406,7 +406,7 @@ describe('Advanced New File', () => {
               }
             }) as typeof AdvancedNewFile;
 
-          advancedNewFile.openFile(path.join('path/to/folder/')).then(() => {
+          advancedNewFile.openFile(path.join('path/to/folder/'), '/').then(() => {
             expect(showInformationMessage).not.to.have.been.called();
           });
         });
