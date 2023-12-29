@@ -86,7 +86,14 @@ function directoriesSync(root: string): FSLocation[] {
         absolute: path.join(root, f)
       };
     })
-    .filter(f => fs.statSync(f.absolute).isDirectory())
+    .filter(f => {
+      try {
+        return fs.statSync(f.absolute).isDirectory()
+      }
+      catch(e) {
+        return false;
+      }
+    })
     .map(f => f);
 
   return results;
