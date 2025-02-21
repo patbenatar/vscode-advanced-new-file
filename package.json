@@ -16,7 +16,9 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.advancedNewFile"
+    "onCommand:extension.advancedNewFile",
+    "onStartupFinished",
+    "workspaceContains:**/*"
   ],
   "main": "./out/src/extension",
   "contributes": {
