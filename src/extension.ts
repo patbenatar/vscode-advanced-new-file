@@ -32,6 +32,10 @@ declare module 'vscode' {
   }
 }
 
+let cache: Cache = null;
+
+const CACHE_EXPIRATION_MINUTES = 60;
+
 function isFolderDescriptor(filepath: string): boolean {
   return filepath.charAt(filepath.length - 1) === path.sep;
 }
@@ -315,12 +319,18 @@ export async function dirQuickPickItems(
   roots: WorkspaceRoot[],
   cache: Cache): Promise<vscode.QuickPickItem[]> {
 
-  const dirOptions = await Promise.all(
-    roots.map(async r => await subdirOptionsForRoot(r))
-  );
-  let quickPickItems =
-    dirOptions.reduce(flatten).map(o => buildQuickPickItem(o));
-
+  let quickPickItems = [];
+  const cachedItems = cache.get('quickPickItems');
+  if (cachedItems && cachedItems.expires > Date.now()) {
+    quickPickItems = [...cachedItems.data];
+  }else{
+    const dirOptions = await Promise.all(
+      roots.map(async r => await subdirOptionsForRoot(r))
+    );
+    quickPickItems = dirOptions.reduce(flatten).map(o => buildQuickPickItem(o));
+    cache.put('quickPickItems', { data: [...quickPickItems], expires: Date.now() + 1000 * 60 * CACHE_EXPIRATION_MINUTES });
+  }
+  
   quickPickItems.unshift(...convenienceOptions(roots, cache));
 
   return quickPickItems;
@@ -360,12 +370,11 @@ export function rootForDir(
 }
 
 export async function command(context: vscode.ExtensionContext) {
+
   const roots = workspaceRoots();
 
   if (roots.length > 0) {
-    const cacheName = roots.map(r => r.rootPath).join(';');
-    const cache = new Cache(context, `workspace:${cacheName}`);
-
+    
     const sortedRoots = sortRoots(roots, cache.get('recentRoots') || []);
 
     const dirSelection =
@@ -393,12 +402,42 @@ export async function command(context: vscode.ExtensionContext) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  const roots = workspaceRoots();
+  const cacheName = roots.map(r => r.rootPath).join(';');
+  cache = new Cache(context, `workspace:${cacheName}`);
+
+  const folderWatcher = vscode.workspace.createFileSystemWatcher('**/*',false,true,true);
+  folderWatcher.onDidCreate((uri) => updateCache(uri));
+
   let disposable = vscode.commands.registerCommand(
     'extension.advancedNewFile',
     () => command(context)
   );
 
   context.subscriptions.push(disposable);
+  context.subscriptions.push(folderWatcher);
 }
 
 export function deactivate() { }
+
+function updateCache(uri: vscode.Uri){
+  if(!cache) return;  
+  if(!fs.lstatSync(uri.path).isDirectory()) return;
+
+  const cachedItems = cache.get('quickPickItems');
+  if (cachedItems && cachedItems.data) {
+    const quickPickItems =[...cachedItems.data];
+    const rootPath = workspaceRoots().find(r => uri.path.indexOf(r.rootPath) === 0);
+    const relativePath = uri.path.replace(rootPath.rootPath,'');
+    const newDir = buildQuickPickItem({
+      displayText: relativePath,
+      fsLocation: {
+        relative: relativePath,
+        absolute: uri.path
+      }
+    });
+    quickPickItems.push(newDir);
+    cachedItems.data = quickPickItems.sort((a,b) => a.label.localeCompare(b.label));
+    cache.put('quickPickItems', cachedItems);
+  }
+}
