@@ -16,6 +16,12 @@
         "Other"
     ],
     "main": "./out/src/extension",
+    "activationEvents": [
+        "onCommand:extension.advancedNewFile"
+    ],
+    "contributors": [
+        "patbenatar"
+    ],
     "contributes": {
         "commands": [
             {
