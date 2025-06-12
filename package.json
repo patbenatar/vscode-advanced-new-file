@@ -1,22 +1,19 @@
 {
-    "name": "advanced-new-file",
-    "displayName": "advanced-new-file",
-    "description": "Create files anywhere in your workspace from the keyboard",
+    "name": "@glektarssza/advanced-new-file",
+    "displayName": "G'lek's Advanced New File",
+    "description": "Create files anywhere in your workspace from the keyboard.",
     "version": "1.4.0",
-    "publisher": "patbenatar",
+    "publisher": "glektarssza",
     "engines": {
-        "vscode": "^1.17.0"
+        "vscode": "^1.22.0"
     },
-    "homepage": "https://github.com/patbenatar/vscode-advanced-new-file",
+    "homepage": "https://github.com/glektarssza/vscode-advanced-new-file",
     "repository": {
         "type": "git",
-        "url": "https://github.com/patbenatar/vscode-advanced-new-file.git"
+        "url": "https://github.com/glektarssza/vscode-advanced-new-file.git"
     },
     "categories": [
         "Other"
-    ],
-    "activationEvents": [
-        "onCommand:extension.advancedNewFile"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -81,9 +78,10 @@
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "node ./node_modules/vscode/bin/test",
         "release": "vsce publish",
-        "lint": "tslint src/** test/**"
+        "lint": "eslint ./src/ ./test/ ./types/"
     },
     "devDependencies": {
+        "@eslint/js": "^9.27.0",
         "@types/chai": "^3.4.34",
         "@types/chai-as-promised": "0.0.29",
         "@types/chai-spies": "0.0.0",
@@ -97,11 +95,15 @@
         "chai": "^3.5.0",
         "chai-as-promised": "^6.0.0",
         "chai-spies": "^0.7.1",
+        "eslint": "^9.27.0",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-plugin-tsdoc": "^0.4.0",
         "fs-extra": "^1.0.0",
         "mocha": "^2.3.3",
+        "prettier": "^3.5.3",
         "proxyquire": "^1.7.10",
-        "tslint": "^4.4.2",
-        "typescript": "^3.9.5",
+        "typescript": "^5.8.3",
+        "typescript-eslint": "8.32.1",
         "vsce": "^2.15.0",
         "vscode": "^1.1.37",
         "ovsx": "0.1.0-next.a9154dc"
