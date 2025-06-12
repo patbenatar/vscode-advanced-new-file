@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-issue-forms.json
+name: Bug Report
+description: Report a bug in the project.
+title: '[bug] '
+labels:
+  - Bug
+body:
+  - id: description
+    type: textarea
+    attributes:
+      label: Description
+      description: A short description of the bug.
+    validations:
+      required: true
+  - id: steps
+    type: textarea
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide a set of steps to reproduce the issue.
+    validations:
+      required: true
+  - id: expected
+    type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - id: actual
+    type: textarea
+    attributes:
+      label: Actual Behavior
+      description: A clear and concise description of what actually happened.
+    validations:
+      required: true
+  - id: version
+    type: input
+    attributes:
+      label: Extension Version
+      description: The version of the extension you're using.
+    validations:
+      required: true
+  - id: operating-system
+    type: dropdown
+    attributes:
+      label: Operating System
+      description: The operating system you are using.
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - id: vscode-channel
+    type: dropdown
+    attributes:
+      label: VSCode Channel
+      description: The channel of VSCode you're using.
+      options:
+        - Stable
+        - Insiders
+      default: 0
+    validations:
+      required: true
+  - id: vscode-version
+    type: input
+    attributes:
+      label: VSCode Version
+      description: The version of VSCode you're using.
+    validations:
+      required: true
+  - id: additional
+    type: textarea
+    attributes:
+      label: Additional Information
+      description: Any additional information that may be helpful in solving the issue.
+    validations:
+      required: false
+  - id: disclaimer
+    type: checkboxes
+    attributes:
+      label: Disclaimer
+      description: 'By submitting this issue, you attest the following:'
+      options:
+        - label: I have searched for existing issues and this is not a duplicate.
+          required: true
+        - label: I have read the project's contributing guidelines.
+          required: true
+        - label: I have read and understood the project's code of conduct.
+          required: true
