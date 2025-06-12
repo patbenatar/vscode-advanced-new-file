@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Manual Test
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yaml
+    secrets:
+      github-token: ${{secrets.GITHUB_TOKEN}}
