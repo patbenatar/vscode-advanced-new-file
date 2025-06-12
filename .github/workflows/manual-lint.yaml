@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Manual Lint
+on:
+  workflow_dispatch:
+jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yaml
+    secrets:
+      github-token: ${{secrets.GITHUB_TOKEN}}
