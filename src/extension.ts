@@ -79,10 +79,11 @@ function directoriesSync(root: string): FSLocation[] {
   const ignore: string[] = [];
   if (vscode.workspace
     .getConfiguration('advancedNewFile').get('useGitIgnore', true)) {
-    ignore.push(...gitignoreGlobs(root).concat(configIgnoredGlobs(root)).map(invertGlob));
+    ignore.push(...gitignoreGlobs(root));
   }
+  ignore.push(...configIgnoredGlobs(root));
 
-  const results = globSync('**', { cwd: root, ignore })
+  const results = globSync('**', { cwd: root, ignore: ignore.map(invertGlob) })
     .map((f): FSLocation => {
       return {
         relative: path.join(path.sep, f),
