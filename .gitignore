@@ -49,3 +49,4 @@ node_modules/
 # Artifacts #
 ## TypeScript ##
 out/
+*.vsix
