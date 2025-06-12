@@ -97,7 +97,7 @@
         "proxyquire": "^1.7.10",
         "tslint": "^4.4.2",
         "typescript": "^3.9.5",
-        "vsce": "^1.18.0",
+        "vsce": "^2.15.0",
         "vscode": "^1.1.37",
         "ovsx": "0.1.0-next.a9154dc"
     },
