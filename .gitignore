@@ -45,3 +45,7 @@ node_modules/
 # Caches #
 ## ESLint ##
 .eslintcache
+
+# Artifacts #
+## TypeScript ##
+out/
