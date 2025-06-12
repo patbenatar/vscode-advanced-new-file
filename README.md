@@ -1,10 +1,13 @@
 # VSCode Advanced New File
 
-[![Travis](https://travis-ci.org/patbenatar/vscode-advanced-new-file.svg?branch=master)](https://travis-ci.org/patbenatar/vscode-advanced-new-file)
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/jelxhuh2ssuckk0n/branch/master?svg=true)](https://ci.appveyor.com/project/patbenatar/vscode-advanced-new-file)
+[![On Push](https://github.com/glektarssza/vscode-advanced-new-file/actions/workflows/push.yaml/badge.svg)](https://github.com/glektarssza/vscode-advanced-new-file/actions/workflows/push.yaml)
+[![CodeQL](https://github.com/glektarssza/vscode-advanced-new-file/actions/workflows/codeql.yaml/badge.svg)](https://github.com/glektarssza/vscode-advanced-new-file/actions/workflows/codeql.yaml)
 
 Inspired by Sublime's AdvancedNewFile plugin, this adds the ability to create
 files anywhere in your workspace.
+
+Forked from [Nick Giancola's](https://github.com/patbenatar)
+[awesome original](https://github.com/patbenatar/vscode-advanced-new-file).
 
 ![Demo](https://media.giphy.com/media/l3vRfRJO7ZX6WNJQs/source.gif)
 
@@ -23,6 +26,7 @@ files anywhere in your workspace.
 * Control the order of top convenient options ("last selection", "current file",
   etc) via config setting `advancedNewFile.convenienceOptions`
 * Brace expansion - expand braces into multiple files. Entering `index.{html,css}` will create and open `index.html` and `index.css`. (thanks to [chuckhendo](https://github.com/chuckhendo) and [timlogemann](https://github.com/timlogemann))
+* Opt in or out of using local Git ignores to control which folders to display.
 
 ## Configuration Example
 
@@ -35,7 +39,8 @@ files anywhere in your workspace.
 },
 "advancedNewFile.showInformationMessages": true,
 "advancedNewFile.convenienceOptions": ["last", "current", "root"],
-"advancedNewFile.expandBraces": false
+"advancedNewFile.expandBraces": false,
+"advancedNewFile.useGitIgnore": true
 ```
 
 ## Usage
@@ -67,18 +72,8 @@ If you encounter an error on Mac or Linux check for broken symlinks with:
 
 1. Clone the repo
 1. `$ npm install`
-1. Add your feature or fix (in `src/`) with test coverage (in `test/`)
-1. Launch the extension and do some manual QA (via Debug > Launch Extension)
+1. Add your feature or fix (in `./src/`) with test coverage (in `./test/`)
+1. Launch the extension and do some manual testing (via Debug > Launch Extension)
 1. Run the tests (via Debug > Launch Tests)
 1. Run the linter: `npm run lint`
 1. Open a PR
-
-## Publishing
-
-### OpenVSX
-
-Change the publisher in package.json to giantcola, then run:
-
-```
-docker-compose run plugin ./node_modules/.bin/ovsx publish -p [token]
-```
