@@ -1,7 +1,15 @@
+# 1.4.0
+
+## What's New
+* Added `advancedNewFile.useGitIgnore` configuration option to select whether to
+  use Git ignores or not when deciding which folders to show or not.
+
 # 1.3.0
 
 ## What's New
-* Adds an `advancedNewFile.expandBraces` configuration option to expand braces in filepath to create and open multiple files: `/path/to/file.{tsx,spec.tsx} => [/path/to/file.tsx, /path/to/file.spec.tsx]`
+* Adds an `advancedNewFile.expandBraces` configuration option to expand braces
+  in filepath to create and open multiple files:
+  `/path/to/file.{tsx,spec.tsx} => [/path/to/file.tsx, /path/to/file.spec.tsx]`
 
 # 1.2.2
 
