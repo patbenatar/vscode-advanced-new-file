@@ -73,12 +73,23 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "tsc -p ./",
-        "compile": "tsc -watch -p ./",
+        "vscode:prepublish": "npm run build",
         "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test",
         "release": "vsce publish",
-        "lint": "eslint ./src/ ./test/ ./types/"
+        "build": "tsc -p ./",
+        "build:watch": "tsc -watch -p ./",
+        "prebuild": "del-cli ./out/",
+        "prebuild:watch": "del-cli ./out/",
+        "test": "node ./node_modules/vscode/bin/test",
+        "lint": "npm run eslint && npm run prettier",
+        "lint:fix": "npm run eslint:fix && npm run prettier:fix",
+        "lint:ci": "npm run eslint:ci && npm run prettier:ci",
+        "eslint": "eslint --cache ./src/ ./test/ ./types/",
+        "eslint:fix": "eslint --cache --fix ./src/ ./test/ ./types/",
+        "eslint:ci": "eslint ./src/ ./test/ ./types/",
+        "prettier": "prettier --config ./.prettierrc.json --ignore-path ./.prettierignore --ignore-path ./.gitignore --cache --check .",
+        "prettier:fix": "prettier --config ./.prettierrc.json --ignore-path ./.prettierignore --ignore-path ./.gitignore --cache --check --write .",
+        "prettier:ci": "prettier --config ./.prettierrc.json --ignore-path ./.prettierignore --ignore-path ./.gitignore --check ."
     },
     "devDependencies": {
         "@eslint/js": "^9.27.0",
@@ -106,7 +117,8 @@
         "typescript-eslint": "8.32.1",
         "vsce": "^2.15.0",
         "vscode": "^1.1.37",
-        "ovsx": "0.1.0-next.a9154dc"
+        "ovsx": "0.1.0-next.a9154dc",
+        "del-cli": "^6.0.0"
     },
     "dependencies": {
         "braces": "^3.0.2",
