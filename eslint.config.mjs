@@ -22,7 +22,7 @@ export default tseslint.config(
         }
     },
     {
-        files: ['**/tests/*.ts', '**/tests/**/*.ts'],
+        files: ['**/test/*.ts', '**/test/**/*.ts'],
         rules: {
             '@typescript-eslint/no-unused-expressions': 'off'
         }
