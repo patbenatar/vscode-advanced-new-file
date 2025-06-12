@@ -8,6 +8,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {removeSync as removeDirSync} from 'fs-extra';
 import {ExtensionContext} from 'vscode';
+import * as Cache from 'vscode-cache';
 
 chai.use(chaiAsPromised);
 chai.use(spies);
@@ -545,7 +546,8 @@ describe('Advanced New File', () => {
                     has: () => false
                 };
 
-                expect(AdvancedNewFile.lastSelection(cache)).to.be.undefined;
+                expect(AdvancedNewFile.lastSelection(cache as unknown as Cache))
+                    .to.be.undefined;
             });
         });
 
@@ -562,7 +564,9 @@ describe('Advanced New File', () => {
                 get: () => lastSelection
             };
 
-            expect(AdvancedNewFile.lastSelection(cache)).to.eq(lastSelection);
+            expect(
+                AdvancedNewFile.lastSelection(cache as unknown as Cache)
+            ).to.eq(lastSelection);
         });
     });
 
@@ -647,7 +651,11 @@ describe('Advanced New File', () => {
                 multi: false
             };
 
-            AdvancedNewFile.cacheSelection(cache, selectedDir, selectedRoot);
+            AdvancedNewFile.cacheSelection(
+                cache as unknown as Cache,
+                selectedDir,
+                selectedRoot
+            );
 
             expect(cache.put).to.have.been.called.with('last', selectedDir);
         });
@@ -668,7 +676,11 @@ describe('Advanced New File', () => {
                 multi: true
             };
 
-            AdvancedNewFile.cacheSelection(cache, selectedDir, selectedRoot);
+            AdvancedNewFile.cacheSelection(
+                cache as unknown as Cache,
+                selectedDir,
+                selectedRoot
+            );
 
             const newRecentRoots = ['/bar', '/foo', '/baz'];
 
@@ -696,7 +708,7 @@ describe('Advanced New File', () => {
                 };
 
                 AdvancedNewFile.cacheSelection(
-                    cache,
+                    cache as unknown as Cache,
                     selectedDir,
                     selectedRoot
                 );
