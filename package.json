@@ -2,7 +2,7 @@
     "name": "glek-advanced-new-file",
     "displayName": "G'lek's Advanced New File",
     "description": "Create files anywhere in your workspace from the keyboard.",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "publisher": "glektarssza",
     "engines": {
         "vscode": "^1.22.0"
@@ -15,6 +15,7 @@
     "categories": [
         "Other"
     ],
+    "packageManager": "npm@11.4.2+sha512.f90c1ec8b207b625d6edb6693aef23dacb39c38e4217fe8c46a973f119cab392ac0de23fe3f07e583188dae9fd9108b3845ad6f525b598742bd060ebad60bff3",
     "main": "./out/src/extension",
     "activationEvents": [
         "onCommand:extension.advancedNewFile"
@@ -74,6 +75,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Whether to use Git ignores when deciding which folders to ignore."
+                },
+                "advancedNewFile.useFilesExclude": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to use the values from `files.exclude` when deciding which folders to ignore."
                 }
             }
         }
