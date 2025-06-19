@@ -1,3 +1,10 @@
+# 1.5.0
+
+## What's New
+* Added `advancedNewFile.useFilesExclude` configuration option to select whether
+  to use the contents of the `files.exclude` setting or not when deciding which
+  folders to show or not.
+
 # 1.4.0
 
 ## What's New
