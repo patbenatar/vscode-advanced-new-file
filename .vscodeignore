@@ -8,7 +8,4 @@ types/
 .gitignore
 tsconfig.json
 vsc-extension-quickstart.md
-Dockerfile
-docker-compose.yml
 .nvmrc
-tslint.json
