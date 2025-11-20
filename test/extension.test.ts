@@ -11,6 +11,21 @@ import { removeSync as removeDirSync } from 'fs-extra';
 chai.use(chaiAsPromised);
 chai.use(spies);
 const expect = chai.expect;
+
+const mockGetConfiguration =
+  (config = { showInformationMessages: true }) => {
+    return (name) => {
+      switch (name) {
+        case 'advancedNewFile':
+          return {
+            get: (configName) => config[configName]
+          };
+        default:
+          return {};
+      }
+    };
+  };
+
 describe('Advanced New File', () => {
   describe('showInputBox', () => {
     it('resolves with the path to input from workspace root', async () => {
@@ -277,19 +292,6 @@ describe('Advanced New File', () => {
   });
 
   describe('openFile', () => {
-    const mockGetConfiguration =
-      (config = { showInformationMessages: true }) => {
-        return (name) => {
-          switch (name) {
-            case 'advancedNewFile':
-              return {
-                get: (configName) => config[configName]
-              };
-            default:
-              return {};
-          }
-        };
-      };
 
     it('attempts to open the file', () => {
       const textDocument = 'mock document';
