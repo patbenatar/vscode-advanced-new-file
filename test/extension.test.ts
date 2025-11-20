@@ -1,18 +1,17 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as spies from 'chai-spies';
-import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
 import * as AdvancedNewFile from '../src/extension';
 import * as proxyquire from 'proxyquire';
 import * as path from 'path';
 import * as fs from 'fs';
 import { removeSync as removeDirSync } from 'fs-extra';
-import { cacheSelection } from '../src/extension';
 
 chai.use(chaiAsPromised);
 chai.use(spies);
 const expect = chai.expect;
+<<<<<<< Updated upstream
 
 const mockGetConfiguration =
 (config = { showInformationMessages: true, expandBraces: false }) => {
@@ -28,6 +27,8 @@ const mockGetConfiguration =
   };
 };
 
+=======
+>>>>>>> Stashed changes
 describe('Advanced New File', () => {
   describe('showInputBox', () => {
     it('resolves with the path to input from workspace root', async () => {
@@ -127,7 +128,7 @@ describe('Advanced New File', () => {
                 switch (name) {
                   case 'advancedNewFile':
                     return {
-                      get: () => {}
+                      get: () => { }
                     };
                   default:
                     return {
@@ -738,13 +739,13 @@ describe('Advanced New File', () => {
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
           workspace: {
-            workspaceFolders: [{ uri: { fsPath: tmpDir }}],
+            workspaceFolders: [{ uri: { fsPath: tmpDir } }],
             openTextDocument,
             getConfiguration(name) {
               switch (name) {
                 case 'advancedNewFile':
                   return {
-                    get: () => {}
+                    get: () => { }
                   };
                 default:
                   return {};
@@ -766,9 +767,9 @@ describe('Advanced New File', () => {
           }
         },
         'vscode-cache': class Cache {
-          public get() {}
+          public get() { }
           public has() { return false; }
-          public put() {}
+          public put() { }
         }
       });
 
@@ -813,7 +814,7 @@ describe('Advanced New File', () => {
         vscode: {
           commands: { registerCommand },
           workspace: {
-            workspaceFolders: [{ uri: { fsPath: tmpDir }}],
+            workspaceFolders: [{ uri: { fsPath: tmpDir } }],
             openTextDocument,
             getConfiguration(configName) {
               switch (configName) {
@@ -842,9 +843,9 @@ describe('Advanced New File', () => {
           }
         },
         'vscode-cache': class Cache {
-          public get() {}
+          public get() { }
           public has() { return false; }
-          public put() {}
+          public put() { }
         }
       });
 
@@ -892,7 +893,7 @@ describe('Advanced New File', () => {
         expect(showErrorMessage)
           .to.have.been.called
           .with('It doesn\'t look like you have a folder opened in your ' +
-                'workspace. Try opening a folder first.');
+            'workspace. Try opening a folder first.');
       });
     });
   });
