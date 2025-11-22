@@ -95,7 +95,6 @@
     "chai-as-promised": "^6.0.0",
     "chai-spies": "^0.7.1",
     "fs-extra": "^1.0.0",
-    "jest": "^30.2.0",
     "mocha": "^2.5.3",
     "ovsx": "0.1.0-next.a9154dc",
     "proxyquire": "^1.7.10",
