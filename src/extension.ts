@@ -226,7 +226,7 @@ export async function openFile(absolutePath: string): Promise<void> {
 
     if (textDocument) {
       const shouldExpandBraces =
-    vscode.workspace.getConfiguration('advancedNewFile').get('expandBraces');
+        vscode.workspace.getConfiguration('advancedNewFile').get('expandBraces');
 
       if (shouldExpandBraces) {
         vscode.window.showTextDocument(textDocument, { preview: false });
