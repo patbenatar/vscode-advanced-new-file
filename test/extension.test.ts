@@ -1,32 +1,30 @@
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as spies from 'chai-spies';
-import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
 import * as AdvancedNewFile from '../src/extension';
 import * as proxyquire from 'proxyquire';
 import * as path from 'path';
 import * as fs from 'fs';
 import { removeSync as removeDirSync } from 'fs-extra';
-import { cacheSelection } from '../src/extension';
 
 chai.use(chaiAsPromised);
 chai.use(spies);
 const expect = chai.expect;
 
 const mockGetConfiguration =
-(config = { showInformationMessages: true, expandBraces: false }) => {
-  return (name) => {
-    switch (name) {
-      case 'advancedNewFile':
-        return {
-          get: (configName) => config[configName]
-        };
-      default:
-        return {};
-    }
+  (config: Record<string, any> = { showInformationMessages: true }) => {
+    return (name) => {
+      switch (name) {
+        case 'advancedNewFile':
+          return {
+            get: (configName) => config[configName]
+          };
+        default:
+          return {};
+      }
+    };
   };
-};
 
 describe('Advanced New File', () => {
   describe('showInputBox', () => {
@@ -127,7 +125,7 @@ describe('Advanced New File', () => {
                 switch (name) {
                   case 'advancedNewFile':
                     return {
-                      get: () => {}
+                      get: () => { }
                     };
                   default:
                     return {
@@ -294,6 +292,7 @@ describe('Advanced New File', () => {
   });
 
   describe('openFile', () => {
+
     it('attempts to open the file', () => {
       const textDocument = 'mock document';
       const openTextDocument = chai.spy(() => Promise.resolve(textDocument));
@@ -396,7 +395,6 @@ describe('Advanced New File', () => {
                 workspace: {
                   openTextDocument,
                   getConfiguration: mockGetConfiguration({
-                    expandBraces: false,
                     showInformationMessages: false
                   })
                 },
@@ -456,7 +454,7 @@ describe('Advanced New File', () => {
             },
           }
         }) as typeof AdvancedNewFile;
-      
+
       it('returns a single item array regardless of presence of braces', () => {
         const fileArray = advancedNewFile.expandBraces('test/file{1,2}.html');
         expect(fileArray).to.deep.eq([
@@ -738,13 +736,13 @@ describe('Advanced New File', () => {
       const advancedNewFile = proxyquire('../src/extension', {
         vscode: {
           workspace: {
-            workspaceFolders: [{ uri: { fsPath: tmpDir }}],
+            workspaceFolders: [{ uri: { fsPath: tmpDir } }],
             openTextDocument,
             getConfiguration(name) {
               switch (name) {
                 case 'advancedNewFile':
                   return {
-                    get: () => {}
+                    get: () => { }
                   };
                 default:
                   return {};
@@ -766,9 +764,9 @@ describe('Advanced New File', () => {
           }
         },
         'vscode-cache': class Cache {
-          public get() {}
+          public get() { }
           public has() { return false; }
-          public put() {}
+          public put() { }
         }
       });
 
@@ -813,7 +811,7 @@ describe('Advanced New File', () => {
         vscode: {
           commands: { registerCommand },
           workspace: {
-            workspaceFolders: [{ uri: { fsPath: tmpDir }}],
+            workspaceFolders: [{ uri: { fsPath: tmpDir } }],
             openTextDocument,
             getConfiguration(configName) {
               switch (configName) {
@@ -842,9 +840,9 @@ describe('Advanced New File', () => {
           }
         },
         'vscode-cache': class Cache {
-          public get() {}
+          public get() { }
           public has() { return false; }
-          public put() {}
+          public put() { }
         }
       });
 
@@ -892,7 +890,7 @@ describe('Advanced New File', () => {
         expect(showErrorMessage)
           .to.have.been.called
           .with('It doesn\'t look like you have a folder opened in your ' +
-                'workspace. Try opening a folder first.');
+            'workspace. Try opening a folder first.');
       });
     });
   });
